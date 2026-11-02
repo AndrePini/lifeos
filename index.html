@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>LIFEOS</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LIFEOS">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1320x2868.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1206x2622.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1290x2796.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1179x2556.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1284x2778.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1170x2532.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1125x2436.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1242x2688.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/828x1792.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash/750x1334.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash/1260x2736.png">
+<style>
+@font-face{font-family:'Geist';font-weight:300;font-style:normal;font-display:swap;src:url(fonts/geist-sans-latin-300-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/geist-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/geist-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/geist-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/geist-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/geist-mono-latin-500-normal.woff2) format('woff2')}
+:root{
+  /* layout: one-screen app — header, 4 swipeable panels (Now / Inbox / Rules / Stats), bottom tab bar. single dark theme. */
+  --bg:#0A0A0A; --surface:#121212; --raise:#191919; --line:#232323; --text:#EDEDED; --dim:#8E8E8E; --faint:#4A4A4A;
+  --accent:#FF5A1F; --bad:#D9534A; --good:#EDEDED;
+  --f-body:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:12px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{background:#0A0A0A;-webkit-text-size-adjust:100%}
+body{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+textarea,input{-webkit-user-select:text;user-select:text}
+body{background:var(--bg);color:var(--text);font:15px/1.45 var(--f-body);-webkit-font-smoothing:antialiased;overflow:hidden;overscroll-behavior:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0;touch-action:manipulation}
+textarea,input,select{font-size:16px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.label{font:500 11px/1.2 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.dim{color:var(--dim)} .small{font-size:13px}
+h1,h2,h3{margin:0;font-weight:500;text-wrap:balance}
+
+/* ---------- shell ---------- */
+#app{height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:max(12px,env(safe-area-inset-top)) 18px 10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:20px;height:20px}
+.brand .wm{font-size:13px;letter-spacing:.16em}
+.wm b{font-weight:600}.wm i{font-style:normal;font-weight:300}
+.top-r{display:flex;align-items:center;gap:14px}
+.clock{font:500 13px var(--f-mono);color:var(--dim)}
+.icon-btn{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:var(--dim)}
+.icon-btn:hover{color:var(--text);background:var(--raise)}
+svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.pager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;min-height:0}
+.pager::-webkit-scrollbar{display:none}
+.panel{flex:0 0 100%;min-width:0;overflow-y:auto;scroll-snap-align:start;scroll-snap-stop:always;padding:18px 18px 40px;-webkit-overflow-scrolling:touch}
+.panel>.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding:6px 8px max(8px,env(safe-area-inset-bottom));background:var(--bg)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--faint);font:500 10px var(--f-mono);letter-spacing:.1em;position:relative}
+.tab[aria-selected="true"]{color:var(--text)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;top:0;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.tab .dot{position:absolute;top:4px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;background:var(--accent);display:none}
+.tab.has .dot{display:block}
+
+/* ---------- splash ---------- */
+#splash{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;transition:opacity .5s ease,transform .5s ease}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.sp{display:flex;flex-direction:column;align-items:center;gap:26px}
+.sp svg{width:112px;height:112px;overflow:visible}
+.sp-ring{fill:none;stroke:var(--text);stroke-width:9;stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1s cubic-bezier(.65,0,.35,1) .15s forwards}
+.sp-tick{fill:var(--accent);transform-origin:60px 23px;transform:scaleY(0);animation:tick .32s cubic-bezier(.2,1.4,.4,1) 1.05s forwards}
+.sp-glow{fill:var(--accent);opacity:0;filter:blur(10px);animation:glow .9s ease 1.1s forwards}
+.sp-word{font-size:30px;letter-spacing:.3em;margin-right:-.3em;display:flex}
+.sp-word span{opacity:0;transform:translateY(8px);animation:up .5s cubic-bezier(.2,.8,.2,1) forwards}
+.sp-date{font:500 11px var(--f-mono);letter-spacing:.2em;color:var(--dim);opacity:0;animation:fade .6s ease 1.55s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes tick{to{transform:scaleY(1)}}
+@keyframes glow{40%{opacity:.7}100%{opacity:0}}
+@keyframes up{to{opacity:1;transform:none}}
+@keyframes fade{to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+body.boot .panel>.wrap>*{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+body.boot .panel>.wrap>*:nth-child(1){animation-delay:.05s}
+body.boot .panel>.wrap>*:nth-child(2){animation-delay:.12s}
+body.boot .panel>.wrap>*:nth-child(3){animation-delay:.19s}
+body.boot .panel>.wrap>*:nth-child(4){animation-delay:.26s}
+body.boot .panel>.wrap>*:nth-child(n+5){animation-delay:.33s}
+body.boot .top,body.boot .tabs{animation:fade .6s ease both}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}
+}
+
+/* ---------- now ---------- */
+.eyebrow{display:flex;align-items:center;gap:8px}
+.eyebrow .pip{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.eyebrow .pip.off{background:var(--faint)}
+.streak{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:10px}
+.big{font:300 68px/0.9 var(--f-body);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.streak-meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-bottom:4px}
+.banner{border:1px dashed var(--faint);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--dim)}
+.banner b{color:var(--text);font-weight:500}
+.status{display:flex;align-items:center;gap:10px;font-size:14px}
+.status .mk{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;flex:none}
+.status.ok{color:var(--text)} .status.bad{color:var(--bad)}
+.status .mk svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.4}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.hold-card{display:flex;align-items:center;gap:18px}
+.hold{position:relative;flex:none;width:112px;height:112px;border-radius:50%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hold svg{width:100%;height:100%;overflow:visible}
+.h-track{fill:none;stroke:var(--line);stroke-width:9}
+.h-fill{fill:none;stroke:var(--text);stroke-width:9;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0)*100)}
+.h-tick{fill:var(--faint);transition:fill .2s}
+.hold.done .h-tick,.hold.holding .h-tick{fill:var(--accent)}
+.hold-txt{position:absolute;inset:0;display:grid;place-items:center;padding-top:22px;font:500 10px var(--f-mono);letter-spacing:.14em;color:var(--dim)}
+.hold.holding{transform:scale(.97)} .hold{transition:transform .15s}
+.h-title{font-size:20px;font-weight:500;margin-bottom:4px}
+.countdown{font:300 38px/1 var(--f-body);margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.block{display:flex;flex-direction:column;gap:10px}
+.block-h{display:flex;justify-content:space-between;align-items:baseline}
+.fix{border-left:2px solid var(--accent);padding:2px 0 2px 14px}
+.fix p{margin:4px 0 0;font-size:16px}
+.routine{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.routine li{border-bottom:1px solid var(--line)}
+.routine button{width:100%;display:grid;grid-template-columns:52px 1fr 22px;align-items:center;gap:10px;padding:13px 2px;text-align:left;position:relative}
+.routine button:disabled{cursor:default}
+.rt{color:var(--dim);font-size:13px}
+.rc{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--faint);display:grid;place-items:center}
+.rc svg{width:11px;height:11px;fill:none;stroke:var(--bg);stroke-width:2.6;opacity:0}
+li.done .rc{background:var(--text);border-color:var(--text)} li.done .rc svg{opacity:1}
+li.done .rl{color:var(--dim);text-decoration:line-through;text-decoration-color:var(--faint)}
+li.cur button::before{content:"";position:absolute;left:-18px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+li.cur .rt{color:var(--accent)}
+.review label{font-size:13px;color:var(--dim);margin-top:4px}
+textarea,input[type=text],input[type=time],input[type=date],select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;resize:vertical;min-height:44px}
+textarea:focus,input:focus,select:focus{border-color:var(--faint);outline:none}
+.score{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.score button{height:40px;border-radius:8px;border:1px solid var(--line);font:500 14px var(--f-mono);color:var(--dim)}
+.score button[aria-checked="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.hold-wide{position:relative;overflow:hidden;width:100%;height:54px;border-radius:12px;border:1px solid var(--faint);margin-top:6px;touch-action:none;-webkit-user-select:none;user-select:none}
+.hold-wide .hw-fill{position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--p,0));background:var(--text)}
+.hold-wide .hw-text{position:relative;font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;mix-blend-mode:difference;color:#fff}
+.err{color:var(--bad);font-size:13px;min-height:1em}
+.closed{display:grid;gap:12px}
+.closed dl{margin:0;display:grid;gap:10px}
+.closed dt{font:500 11px var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.closed dd{margin:2px 0 0}
+.lock{display:inline-flex;align-items:center;gap:6px}
+.lock svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8}
+.verse blockquote{margin:10px 0 10px;font-size:19px;line-height:1.5;font-weight:300;text-wrap:pretty}
+.verse .ref{font-size:12px;color:var(--dim);letter-spacing:.04em}
+.kind{display:inline-flex;align-items:center;gap:6px}
+.kind::before{content:"";width:6px;height:6px;border-radius:1px;background:var(--text)}
+.kind.p::before{background:var(--accent)}
+.rule-mini{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rule-mini .num{font-size:12px;color:var(--accent)}
+.rule-mini span:last-child{flex:1}
+
+/* ---------- badge ---------- */
+.badge{display:inline-flex;align-items:center;gap:7px;height:24px;padding:0 10px 0 8px;border-radius:6px;font:600 10px var(--f-mono);letter-spacing:.16em;position:relative;overflow:hidden}
+.badge svg{width:12px;height:12px}
+.t0{background:linear-gradient(135deg,#565b62,#a3a9b0 48%,#4d5259 75%,#7f858c);color:#0b0c0d}
+.t1{background:linear-gradient(135deg,#8a6a2f,#ecd08a 45%,#a57f38 72%,#f2dc9c);color:#1b1304}
+.t2{background:linear-gradient(135deg,#9aa0a6,#f5f6f7 45%,#b7bbc0 72%,#e9eaec);color:#121314}
+.t3{background:linear-gradient(135deg,#030303,#2c2c2c 45%,#090909 72%,#1e1e1e);color:#EDEDED;box-shadow:inset 0 0 0 1px #3b3b3b}
+.badge-lg{display:flex;flex-direction:column;justify-content:space-between;height:150px;border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
+.badge-lg .bl-top{display:flex;justify-content:space-between;align-items:center;font:600 11px var(--f-mono);letter-spacing:.2em}
+.badge-lg .bl-top svg{width:26px;height:26px}
+.badge-lg .bl-name{font:600 26px var(--f-mono);letter-spacing:.22em}
+.badge-lg .bl-sub{font:500 11px var(--f-mono);letter-spacing:.08em;opacity:.75}
+.shine::after{content:"";position:absolute;inset:-40%;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);transform:translateX(-60%);animation:shine 3.5s ease-in-out 2.2s infinite}
+@keyframes shine{0%{transform:translateX(-60%)}35%,100%{transform:translateX(60%)}}
+.prog{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--text)}
+
+/* ---------- stats ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tile{background:var(--bg);padding:14px}
+.tile .v{font:300 34px/1.1 var(--f-body);margin-top:6px;font-variant-numeric:tabular-nums}
+.heat{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:4px}
+.heat i{aspect-ratio:1;border-radius:3px;background:var(--surface)}
+.heat i.win{background:rgba(237,237,237,var(--a,1))}
+.heat i.loss{background:rgba(217,83,74,.45)}
+.heat i.open{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.heat i.off{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.heat i.fut{background:transparent}
+.legend{display:flex;gap:14px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.wk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wk>div{border-top:1px solid var(--line);padding-top:8px}
+.wk .v{font:400 20px var(--f-mono);margin-top:4px}
+.fixes{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.fixes li{display:grid;grid-template-columns:44px 1fr;gap:10px;font-size:14px}
+.ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ladder div{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ladder .badge{width:100%;justify-content:center;padding:0}
+.ai-out{white-space:pre-wrap;font-size:15px;line-height:1.55}
+.btn{height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--faint);font:500 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{border-color:var(--dim)}
+.btn.solid{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ---------- rules ---------- */
+.rule-hero{padding:22px 0 8px}
+.rule-hero .n{font:300 92px/0.9 var(--f-body);color:var(--accent);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.rule-hero h2{font-size:26px;line-height:1.2;margin:14px 0 14px;font-weight:500}
+.bul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.bul li{display:grid;grid-template-columns:16px 1fr;color:var(--text);font-size:16px}
+.bul li::before{content:"·";color:var(--dim)}
+.rlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.rlist li{border-bottom:1px solid var(--line)}
+.rlist details summary{list-style:none;display:grid;grid-template-columns:36px 1fr;gap:8px;padding:14px 0;cursor:pointer}
+.rlist summary::-webkit-details-marker{display:none}
+.rlist .bul{padding:0 0 14px 44px;font-size:14px}
+.rlist .today summary .num{color:var(--accent)}
+
+/* ---------- inbox ---------- */
+.ih{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.mail{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.mail li{border-bottom:1px solid var(--line)}
+.mail a{display:block;padding:12px 0;color:inherit;text-decoration:none}
+.m-top{display:flex;align-items:center;gap:8px;min-width:0}
+.m-from{font-size:13px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-sub{margin-top:3px;font-size:15px;overflow-wrap:anywhere}
+.m-why{margin-top:3px;font-size:13px;color:var(--dim)}
+.chip{flex:none;font:600 9.5px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:3px 6px;border-radius:4px;border:1px solid var(--faint);color:var(--dim)}
+.chip.c-school,.chip.c-deadline{border-color:var(--accent);color:var(--accent)}
+.chip.c-money{border-color:var(--bad);color:var(--bad)}
+.tasks{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.tasks li{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.tasks .due{font:500 12px var(--f-mono);color:var(--dim)}
+.tasks .due.late{color:var(--bad)} .tasks .due.soon{color:var(--accent)}
+.tasks li.done .tt{color:var(--dim);text-decoration:line-through}
+.chk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--faint);display:grid;place-items:center}
+.chk svg{width:11px;height:11px;fill:none;stroke:var(--bg);stroke-width:2.6;opacity:0}
+li.done .chk{background:var(--text);border-color:var(--text)} li.done .chk svg{opacity:1}
+.addtask{display:grid;grid-template-columns:1fr 138px auto;gap:8px}
+@media (max-width:420px){.addtask{grid-template-columns:1fr 1fr}.addtask .btn{grid-column:1/-1}}
+details.more summary{cursor:pointer;padding:6px 0}
+.note{font-size:13px;color:var(--dim);margin:0}
+.empty{font-size:14px;color:var(--dim);padding:12px 0}
+
+/* ---------- sheet ---------- */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheet-in{width:100%;max-width:560px;max-height:92%;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;padding:20px 18px max(22px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:18px;animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+.sheet-h{display:flex;justify-content:space-between;align-items:center}
+.field{display:grid;gap:6px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rrow{display:grid;grid-template-columns:96px 1fr 36px;gap:8px;align-items:center}
+.x{width:36px;height:36px;border-radius:8px;color:var(--dim);font-size:20px}
+.x:hover{background:var(--raise);color:var(--text)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--text);color:var(--bg);font:500 13px var(--f-body);padding:10px 14px;border-radius:10px;max-width:calc(100% - 32px);box-shadow:0 8px 30px rgba(0,0,0,.5);animation:rise .25s ease}
+.ob-mark{width:64px;height:64px}
+</style>
+</head>
+<body class="boot">
+
+<div id="splash" aria-hidden="true">
+  <div class="sp">
+    <svg viewBox="0 0 120 120">
+      <circle class="sp-glow" cx="60" cy="34" r="10"/>
+      <circle class="sp-ring" cx="60" cy="60" r="44" pathLength="100" transform="rotate(-90 60 60)"/>
+      <rect class="sp-tick" x="55.5" y="23" width="9" height="22" rx="1.5"/>
+    </svg>
+    <div class="sp-word wm" id="sp-word"></div>
+    <div class="sp-date" id="sp-date"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="44" fill="none" stroke="#EDEDED" stroke-width="11"/><rect x="54.5" y="22" width="11" height="24" rx="2" fill="#FF5A1F"/></svg>
+      <span class="wm"><b>LIFE</b><i>OS</i></span>
+    </div>
+    <div class="top-r">
+      <span class="clock" id="clock"></span>
+      <button class="icon-btn" id="open-settings" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+    </div>
+  </header>
+  <main class="pager" id="pager">
+    <section class="panel" id="p-now" aria-label="Now"><div class="wrap"></div></section>
+    <section class="panel" id="p-inbox" aria-label="Inbox"><div class="wrap"></div></section>
+    <section class="panel" id="p-rules" aria-label="Rules"><div class="wrap"></div></section>
+    <section class="panel" id="p-stats" aria-label="Stats"><div class="wrap"></div></section>
+  </main>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-i="0" aria-selected="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.8v4.2"/></svg>NOW</button>
+    <button class="tab" role="tab" data-i="1" aria-selected="false"><span class="dot"></span><svg class="ic" viewBox="0 0 24 24"><path d="M4 13.5 6.6 6h10.8L20 13.5V18H4z"/><path d="M4 13.5h4.6l1.2 2.2h4.4l1.2-2.2H20"/></svg>INBOX</button>
+    <button class="tab" role="tab" data-i="2" aria-selected="false"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="7.5" width="14" height="11.5" rx="2"/><path d="M8 4.5h8"/></svg>RULES</button>
+    <button class="tab" role="tab" data-i="3" aria-selected="false"><svg class="ic" viewBox="0 0 24 24"><path d="M6 19v-7M12 19V5M18 19v-4"/></svg>STATS</button>
+  </nav>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="sheet-in" id="sheet-in" role="dialog" aria-modal="true"></div></div>
+
+<script>
+const VERSES = [["1 Peter 1:13","Wherefore gird up the loins of your mind, be sober, and hope to the end for the grace that is to be brought unto you at the revelation of Jesus Christ.","M"],["Psalm 119:60","I made haste, and delayed not to keep thy commandments.","M"],["Ezekiel 36:26","A new heart also will I give you, and a new spirit will I put within you: and I will take away the stony heart out of your flesh, and I will give you an heart of flesh.","P"],["Psalm 118:24","This is the day which the LORD hath made; we will rejoice and be glad in it.","M"],["Exodus 14:14","The LORD shall fight for you, and ye shall hold your peace.","M"],["Psalm 119:11","Thy word have I hid in mine heart, that I might not sin against thee.","P"],["Proverbs 1:7","The fear of the LORD is the beginning of knowledge: but fools despise wisdom and instruction.","M"],["Isaiah 30:21","And thine ears shall hear a word behind thee, saying, This is the way, walk ye in it, when ye turn to the right hand, and when ye turn to the left.","M"],["Hebrews 4:16","Let us therefore come boldly unto the throne of grace, that we may obtain mercy, and find grace to help in time of need.","P"],["Isaiah 40:29","He giveth power to the faint; and to them that have no might he increaseth strength.","M"],["Proverbs 24:27","Prepare thy work without, and make it fit for thyself in the field; and afterwards build thine house.","M"],["Proverbs 25:28","He that hath no rule over his own spirit is like a city that is broken down, and without walls.","P"],["Psalm 37:5","Commit thy way unto the LORD ; trust also in him; and he shall bring it to pass.","M"],["Hebrews 13:8","Jesus Christ the same yesterday, and to day, and for ever.","M"],["Proverbs 6:27-28","Can a man take fire in his bosom, and his clothes not be burned? Can one go upon hot coals, and his feet not be burned?","P"],["Proverbs 4:7","Wisdom is the principal thing; therefore get wisdom: and with all thy getting get understanding.","M"],["Proverbs 6:25","Lust not after her beauty in thine heart; neither let her take thee with her eyelids.","P"],["James 1:2-3","My brethren, count it all joy when ye fall into divers temptations; Knowing this , that the trying of your faith worketh patience.","M"],["1 Thessalonians 5:6","Therefore let us not sleep, as do others; but let us watch and be sober.","M"],["Ephesians 5:8","For ye were sometimes darkness, but now are ye light in the Lord: walk as children of light.","P"],["Matthew 11:28","Come unto me, all ye that labour and are heavy laden, and I will give you rest.","M"],["Romans 8:28","And we know that all things work together for good to them that love God, to them who are the called according to his purpose.","M"],["Proverbs 5:8","Remove thy way far from her, and come not nigh the door of her house.","P"],["Matthew 6:34","Take therefore no thought for the morrow: for the morrow shall take thought for the things of itself. Sufficient unto the day is the evil thereof.","M"],["Jeremiah 29:11","For I know the thoughts that I think toward you, saith the LORD , thoughts of peace, and not of evil, to give you an expected end.","M"],["1 John 3:3","And every man that hath this hope in him purifieth himself, even as he is pure.","P"],["Hebrews 10:35-36","Cast not away therefore your confidence, which hath great recompence of reward. For ye have need of patience, that, after ye have done the will of God, ye might receive the promise.","M"],["James 1:4","But let patience have her perfect work, that ye may be perfect and entire, wanting nothing.","M"],["Hebrews 4:15","For we have not an high priest which cannot be touched with the feeling of our infirmities; but was in all points tempted like as we are, yet without sin.","P"],["Mark 1:35","And in the morning, rising up a great while before day, he went out, and departed into a solitary place, and there prayed.","M"],["2 Peter 1:4","Whereby are given unto us exceeding great and precious promises: that by these ye might be partakers of the divine nature, having escaped the corruption that is in the world through lust.","P"],["2 Corinthians 13:5","Examine yourselves, whether ye be in the faith; prove your own selves. Know ye not your own selves, how that Jesus Christ is in you, except ye be reprobates?","M"],["Isaiah 50:4","The Lord GOD hath given me the tongue of the learned, that I should know how to speak a word in season to him that is weary: he wakeneth morning by morning, he wakeneth mine ear to hear as the learned.","M"],["1 Peter 4:1-2","Forasmuch then as Christ hath suffered for us in the flesh, arm yourselves likewise with the same mind: for he that hath suffered in the flesh hath ceased from sin; That he no longer should live the rest of his time in the flesh to the lusts of men, but to the will of God.","P"],["1 Timothy 6:11","But thou, O man of God, flee these things; and follow after righteousness, godliness, faith, love, patience, meekness.","M"],["Romans 8:31","What shall we then say to these things? If God be for us, who can be against us?","M"],["Proverbs 13:20","He that walketh with wise men shall be wise: but a companion of fools shall be destroyed.","P"],["1 Corinthians 10:31","Whether therefore ye eat, or drink, or whatsoever ye do, do all to the glory of God.","M"],["Matthew 7:13","Enter ye in at the strait gate: for wide is the gate, and broad is the way, that leadeth to destruction, and many there be which go in thereat.","M"],["1 Corinthians 15:33","Be not deceived: evil communications corrupt good manners.","P"],["Proverbs 15:19","The way of the slothful man is as an hedge of thorns: but the way of the righteous is made plain.","M"],["1 Thessalonians 5:16-18","Rejoice evermore. Pray without ceasing. In every thing give thanks: for this is the will of God in Christ Jesus concerning you.","M"],["Psalm 101:3","I will set no wicked thing before mine eyes: I hate the work of them that turn aside; it shall not cleave to me.","P"],["2 Timothy 2:5","And if a man also strive for masteries, yet is he not crowned, except he strive lawfully.","M"],["Proverbs 6:23-24","For the commandment is a lamp; and the law is light; and reproofs of instruction are the way of life: To keep thee from the evil woman, from the flattery of the tongue of a strange woman.","P"],["Nehemiah 8:10","Then he said unto them, Go your way, eat the fat, and drink the sweet, and send portions unto them for whom nothing is prepared: for this day is holy unto our Lord: neither be ye sorry; for the joy of the LORD is your strength.","M"],["John 9:4","I must work the works of him that sent me, while it is day: the night cometh, when no man can work.","M"],["James 1:14-15","But every man is tempted, when he is drawn away of his own lust, and enticed. Then when lust hath conceived, it bringeth forth sin: and sin, when it is finished, bringeth forth death.","P"],["Haggai 2:4","Yet now be strong, O Zerubbabel, saith the LORD ; and be strong, O Joshua, son of Josedech, the high priest; and be strong, all ye people of the land, saith the LORD , and work: for I am with you, saith the LORD of hosts.","M"],["Proverbs 29:25","The fear of man bringeth a snare: but whoso putteth his trust in the LORD shall be safe.","M"],["Psalm 119:10","With my whole heart have I sought thee: O let me not wander from thy commandments.","P"],["Proverbs 22:29","Seest thou a man diligent in his business? he shall stand before kings; he shall not stand before mean men .","M"],["Proverbs 18:10","The name of the LORD is a strong tower: the righteous runneth into it, and is safe.","M"],["Matthew 15:19","For out of the heart proceed evil thoughts, murders, adulteries, fornications, thefts, false witness, blasphemies.","P"],["1 Timothy 6:12","Fight the good fight of faith, lay hold on eternal life, whereunto thou art also called, and hast professed a good profession before many witnesses.","M"],["Isaiah 54:17","No weapon that is formed against thee shall prosper; and every tongue that shall rise against thee in judgment thou shalt condemn. This is the heritage of the servants of the LORD , and their righteousness is of me, saith the LORD .","M"],["Hebrews 12:4","Ye have not yet resisted unto blood, striving against sin.","P"],["Psalm 143:8","Cause me to hear thy lovingkindness in the morning; for in thee do I trust: cause me to know the way wherein I should walk; for I lift up my soul unto thee.","M"],["Ephesians 5:11","And have no fellowship with the unfruitful works of darkness, but rather reprove them .","P"],["Ephesians 3:20","Now unto him that is able to do exceeding abundantly above all that we ask or think, according to the power that worketh in us.","M"],["Matthew 6:6","But thou, when thou prayest, enter into thy closet, and when thou hast shut thy door, pray to thy Father which is in secret; and thy Father which seeth in secret shall reward thee openly.","M"],["Philippians 4:8","Finally, brethren, whatsoever things are true, whatsoever things are honest, whatsoever things are just, whatsoever things are pure, whatsoever things are lovely, whatsoever things are of good report; if there be any virtue, and if there be any praise, think on these things.","P"],["Proverbs 30:24-25","There be four things which are little upon the earth, but they are exceeding wise: The ants are a people not strong, yet they prepare their meat in the summer.","M"],["Proverbs 14:15","The simple believeth every word: but the prudent man looketh well to his going.","M"],["Ephesians 4:22-24","That ye put off concerning the former conversation the old man, which is corrupt according to the deceitful lusts; And be renewed in the spirit of your mind; And that ye put on the new man, which after God is created in righteousness and true holiness.","P"],["2 Chronicles 15:7","Be ye strong therefore, and let not your hands be weak: for your work shall be rewarded.","M"],["2 Thessalonians 3:10","For even when we were with you, this we commanded you, that if any would not work, neither should he eat.","M"],["Psalm 32:5","I acknowledged my sin unto thee, and mine iniquity have I not hid. I said, I will confess my transgressions unto the LORD ; and thou forgavest the iniquity of my sin.","P"],["Nehemiah 6:3","And I sent messengers unto them, saying, I am doing a great work, so that I cannot come down: why should the work cease, whilst I leave it, and come down to you?","M"],["Proverbs 6:6","Go to the ant, thou sluggard; consider her ways, and be wise.","M"],["Titus 2:6","Young men likewise exhort to be sober minded.","P"],["Proverbs 18:9","He also that is slothful in his work is brother to him that is a great waster.","M"],["Psalm 86:11","Teach me thy way, O LORD ; I will walk in thy truth: unite my heart to fear thy name.","P"],["Proverbs 19:20","Hear counsel, and receive instruction, that thou mayest be wise in thy latter end.","M"],["Isaiah 26:3","Thou wilt keep him in perfect peace, whose mind is stayed on thee: because he trusteth in thee.","M"],["Proverbs 5:22","His own iniquities shall take the wicked himself, and he shall be holden with the cords of his sins.","P"],["Proverbs 24:16","For a just man falleth seven times, and riseth up again: but the wicked shall fall into mischief.","M"],["Proverbs 28:1","The wicked flee when no man pursueth: but the righteous are bold as a lion.","M"],["2 Corinthians 10:5","Casting down imaginations, and every high thing that exalteth itself against the knowledge of God, and bringing into captivity every thought to the obedience of Christ.","P"],["Proverbs 28:19","He that tilleth his land shall have plenty of bread: but he that followeth after vain persons shall have poverty enough.","M"],["Hebrews 12:1","Wherefore seeing we also are compassed about with so great a cloud of witnesses, let us lay aside every weight, and the sin which doth so easily beset us , and let us run with patience the race that is set before us.","M"],["Proverbs 4:14-15","Enter not into the path of the wicked, and go not in the way of evil men . Avoid it, pass not by it, turn from it, and pass away.","P"],["Deuteronomy 31:8","And the LORD , he it is that doth go before thee; he will be with thee, he will not fail thee, neither forsake thee: fear not, neither be dismayed.","M"],["Matthew 7:24","Therefore whosoever heareth these sayings of mine, and doeth them, I will liken him unto a wise man, which built his house upon a rock.","M"],["John 8:11","She said, No man, Lord. And Jesus said unto her, Neither do I condemn thee: go, and sin no more.","P"],["Zechariah 4:10","For who hath despised the day of small things? for they shall rejoice, and shall see the plummet in the hand of Zerubbabel with those seven; they are the eyes of the LORD , which run to and fro through the whole earth. shall rejoice.","M"],["James 4:14","Whereas ye know not what shall be on the morrow. For what is your life? It is even a vapour, that appeareth for a little time, and then vanisheth away.","M"],["Proverbs 4:23","Keep thy heart with all diligence; for out of it are the issues of life.","P"],["Hebrews 6:12","That ye be not slothful, but followers of them who through faith and patience inherit the promises.","M"],["Proverbs 4:27","Turn not to the right hand nor to the left: remove thy foot from evil.","P"],["Matthew 19:26","But Jesus beheld them , and said unto them, With men this is impossible; but with God all things are possible.","M"],["Ecclesiastes 11:6","In the morning sow thy seed, and in the evening withhold not thine hand: for thou knowest not whether shall prosper, either this or that, or whether they both shall be alike good.","M"],["Proverbs 6:32","But whoso committeth adultery with a woman lacketh understanding: he that doeth it destroyeth his own soul.","P"],["Hebrews 11:1","Now faith is the substance of things hoped for, the evidence of things not seen.","M"],["2 Corinthians 4:16","For which cause we faint not; but though our outward man perish, yet the inward man is renewed day by day.","M"],["Romans 6:13","Neither yield ye your members as instruments of unrighteousness unto sin: but yield yourselves unto God, as those that are alive from the dead, and your members as instruments of righteousness unto God.","P"],["2 Samuel 22:33","God is my strength and power: and he maketh my way perfect.","M"],["Proverbs 16:9","A man’s heart deviseth his way: but the LORD directeth his steps.","M"],["Proverbs 3:7","Be not wise in thine own eyes: fear the LORD , and depart from evil.","P"],["Proverbs 12:27","The slothful man roasteth not that which he took in hunting: but the substance of a diligent man is precious.","M"],["Ephesians 5:14","Wherefore he saith, Awake thou that sleepest, and arise from the dead, and Christ shall give thee light.","M"],["Proverbs 27:20","Hell and destruction are never full; so the eyes of man are never satisfied.","P"],["Proverbs 10:5","He that gathereth in summer is a wise son: but he that sleepeth in harvest is a son that causeth shame.","M"],["Psalm 51:12","Restore unto me the joy of thy salvation; and uphold me with thy free spirit.","P"],["Proverbs 27:17","Iron sharpeneth iron; so a man sharpeneth the countenance of his friend.","M"],["Ecclesiastes 11:4","He that observeth the wind shall not sow; and he that regardeth the clouds shall not reap.","M"],["Galatians 5:22-23","But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.","P"],["1 Timothy 4:15","Meditate upon these things; give thyself wholly to them; that thy profiting may appear to all.","M"],["Job 17:9","The righteous also shall hold on his way, and he that hath clean hands shall be stronger and stronger.","M"],["1 Thessalonians 4:7","For God hath not called us unto uncleanness, but unto holiness.","P"],["Proverbs 4:18","But the path of the just is as the shining light, that shineth more and more unto the perfect day.","M"],["Proverbs 15:32","He that refuseth instruction despiseth his own soul: but he that heareth reproof getteth understanding.","M"],["James 1:21","Wherefore lay apart all filthiness and superfluity of naughtiness, and receive with meekness the engrafted word, which is able to save your souls.","P"],["Isaiah 41:13","For I the LORD thy God will hold thy right hand, saying unto thee, Fear not; I will help thee.","M"],["1 Corinthians 9:26-27","I therefore so run, not as uncertainly; so fight I, not as one that beateth the air: But I keep under my body, and bring it into subjection: lest that by any means, when I have preached to others, I myself should be a castaway.","M"],["Hebrews 13:4","Marriage is honourable in all, and the bed undefiled: but whoremongers and adulterers God will judge.","P"],["Hebrews 12:11","Now no chastening for the present seemeth to be joyous, but grievous: nevertheless afterward it yieldeth the peaceable fruit of righteousness unto them which are exercised thereby.","M"],["Proverbs 2:10-11","When wisdom entereth into thine heart, and knowledge is pleasant unto thy soul; Discretion shall preserve thee, understanding shall keep thee.","P"],["Psalm 46:1","God is our refuge and strength, a very present help in trouble.","M"],["2 Corinthians 9:6","But this I say , He which soweth sparingly shall reap also sparingly; and he which soweth bountifully shall reap also bountifully.","M"],["1 John 2:15","Love not the world, neither the things that are in the world. If any man love the world, the love of the Father is not in him.","P"],["Haggai 1:5","Now therefore thus saith the LORD of hosts; Consider your ways.","M"],["Joshua 1:7","Only be thou strong and very courageous, that thou mayest observe to do according to all the law, which Moses my servant commanded thee: turn not from it to the right hand or to the left, that thou mayest prosper whithersoever thou goest.","M"],["Psalm 51:10","Create in me a clean heart, O God; and renew a right spirit within me.","P"],["Isaiah 30:15","For thus saith the Lord GOD , the Holy One of Israel; In returning and rest shall ye be saved; in quietness and in confidence shall be your strength: and ye would not.","M"],["Psalm 119:105","Thy word is a lamp unto my feet, and a light unto my path.","M"],["Micah 7:19","He will turn again, he will have compassion upon us; he will subdue our iniquities; and thou wilt cast all their sins into the depths of the sea.","P"],["Isaiah 6:8","Also I heard the voice of the Lord, saying, Whom shall I send, and who will go for us? Then said I, Here am I; send me.","M"],["Joshua 1:9","Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.","M"],["1 Corinthians 10:13","There hath no temptation taken you but such as is common to man: but God is faithful, who will not suffer you to be tempted above that ye are able; but will with the temptation also make a way to escape, that ye may be able to bear it.","P"],["Psalm 63:1","O God, thou art my God; early will I seek thee: my soul thirsteth for thee, my flesh longeth for thee in a dry and thirsty land, where no water is.","M"],["Ephesians 6:11","Put on the whole armour of God, that ye may be able to stand against the wiles of the devil.","P"],["Hebrews 12:2","Looking unto Jesus the author and finisher of our faith; who for the joy that was set before him endured the cross, despising the shame, and is set down at the right hand of the throne of God.","M"],["Romans 5:3-4","And not only so , but we glory in tribulations also: knowing that tribulation worketh patience; And patience, experience; and experience, hope.","M"],["James 1:12","Blessed is the man that endureth temptation: for when he is tried, he shall receive the crown of life, which the Lord hath promised to them that love him.","P"],["1 Peter 5:6-7","Humble yourselves therefore under the mighty hand of God, that he may exalt you in due time: Casting all your care upon him; for he careth for you.","M"],["1 Corinthians 9:25","And every man that striveth for the mastery is temperate in all things. Now they do it to obtain a corruptible crown; but we an incorruptible.","M"],["Psalm 139:23-24","Search me, O God, and know my heart: try me, and know my thoughts: And see if there be any wicked way in me, and lead me in the way everlasting.","P"],["Psalm 27:14","Wait on the LORD : be of good courage, and he shall strengthen thine heart: wait, I say, on the LORD .","M"],["2 Thessalonians 3:13","But ye, brethren, be not weary in well doing.","M"],["Matthew 5:29","And if thy right eye offend thee, pluck it out, and cast it from thee: for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.","P"],["Psalm 1:2","But his delight is in the law of the LORD ; and in his law doth he meditate day and night.","M"],["Psalm 127:1","Except the LORD build the house, they labour in vain that build it: except the LORD keep the city, the watchman waketh but in vain.","M"],["Romans 13:13","Let us walk honestly, as in the day; not in rioting and drunkenness, not in chambering and wantonness, not in strife and envying.","P"],["1 Corinthians 14:40","Let all things be done decently and in order.","M"],["1 Peter 5:9","Whom resist stedfast in the faith, knowing that the same afflictions are accomplished in your brethren that are in the world.","P"],["Psalm 40:2","He brought me up also out of an horrible pit, out of the miry clay, and set my feet upon a rock, and established my goings.","M"],["John 16:33","These things I have spoken unto you, that in me ye might have peace. In the world ye shall have tribulation: but be of good cheer; I have overcome the world.","M"],["1 John 2:16-17","For all that is in the world, the lust of the flesh, and the lust of the eyes, and the pride of life, is not of the Father, but is of the world. And the world passeth away, and the lust thereof: but he that doeth the will of God abideth for ever.","P"],["Psalm 16:7","I will bless the LORD , who hath given me counsel: my reins also instruct me in the night seasons.","M"],["Philippians 1:6","Being confident of this very thing, that he which hath begun a good work in you will perform it until the day of Jesus Christ.","M"],["1 Corinthians 6:18","Flee fornication. Every sin that a man doeth is without the body; but he that committeth fornication sinneth against his own body.","P"],["Ecclesiastes 4:9-10","Two are better than one; because they have a good reward for their labour. For if they fall, the one will lift up his fellow: but woe to him that is alone when he falleth; for he hath not another to help him up.","M"],["Isaiah 43:18-19","Remember ye not the former things, neither consider the things of old. Behold, I will do a new thing; now it shall spring forth; shall ye not know it? I will even make a way in the wilderness, and rivers in the desert.","M"],["Romans 6:14","For sin shall not have dominion over you: for ye are not under the law, but under grace.","P"],["1 Corinthians 15:58","Therefore, my beloved brethren, be ye stedfast, unmoveable, always abounding in the work of the Lord, forasmuch as ye know that your labour is not in vain in the Lord.","M"],["Proverbs 20:13","Love not sleep, lest thou come to poverty; open thine eyes, and thou shalt be satisfied with bread.","M"],["Colossians 3:2","Set your affection on things above, not on things on the earth.","P"],["2 Timothy 4:7","I have fought a good fight, I have finished my course, I have kept the faith.","M"],["Romans 12:21","Be not overcome of evil, but overcome evil with good.","M"],["1 Peter 2:11","Dearly beloved, I beseech you as strangers and pilgrims, abstain from fleshly lusts, which war against the soul.","P"],["2 Timothy 3:16-17","All scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness: That the man of God may be perfect, throughly furnished unto all good works.","M"],["Galatians 5:17","For the flesh lusteth against the Spirit, and the Spirit against the flesh: and these are contrary the one to the other: so that ye cannot do the things that ye would.","P"],["Matthew 5:14","Ye are the light of the world. A city that is set on an hill cannot be hid.","M"],["Ephesians 6:13","Wherefore take unto you the whole armour of God, that ye may be able to withstand in the evil day, and having done all, to stand.","M"],["1 Thessalonians 4:3-4","For this is the will of God, even your sanctification, that ye should abstain from fornication: That every one of you should know how to possess his vessel in sanctification and honour.","P"],["1 Peter 4:7","But the end of all things is at hand: be ye therefore sober, and watch unto prayer.","M"],["Proverbs 14:23","In all labour there is profit: but the talk of the lips tendeth only to penury.","M"],["Romans 12:1","I beseech you therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.","P"],["Psalm 4:4","Stand in awe, and sin not: commune with your own heart upon your bed, and be still.","M"],["Luke 18:1","And he spake a parable unto them to this end , that men ought always to pray, and not to faint.","M"],["Psalm 34:14","Depart from evil, and do good; seek peace, and pursue it.","P"],["James 1:22","But be ye doers of the word, and not hearers only, deceiving your own selves.","M"],["Proverbs 21:31","The horse is prepared against the day of battle: but safety is of the LORD .","M"],["Proverbs 16:17","The highway of the upright is to depart from evil: he that keepeth his way preserveth his soul.","P"],["1 Corinthians 16:14","Let all your things be done with charity.","M"],["1 John 1:9","If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.","P"],["Proverbs 3:11-12","My son, despise not the chastening of the LORD ; neither be weary of his correction: For whom the LORD loveth he correcteth; even as a father the son in whom he delighteth.","M"],["Psalm 27:1","The LORD is my light and my salvation; whom shall I fear? the LORD is the strength of my life; of whom shall I be afraid?","M"],["1 Peter 1:15-16","But as he which hath called you is holy, so be ye holy in all manner of conversation; Because it is written, Be ye holy; for I am holy.","P"],["Colossians 3:23","And whatsoever ye do, do it heartily, as to the Lord, and not unto men.","M"],["Psalm 59:16","But I will sing of thy power; yea, I will sing aloud of thy mercy in the morning: for thou hast been my defence and refuge in the day of my trouble.","M"],["1 Thessalonians 5:23","And the very God of peace sanctify you wholly; and I pray God your whole spirit and soul and body be preserved blameless unto the coming of our Lord Jesus Christ.","P"],["1 Peter 4:10","As every man hath received the gift, even so minister the same one to another, as good stewards of the manifold grace of God.","M"],["Isaiah 40:31","But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.","M"],["Romans 8:6","For to be carnally minded is death; but to be spiritually minded is life and peace.","P"],["Romans 12:2","And be not conformed to this world: but be ye transformed by the renewing of your mind, that ye may prove what is that good, and acceptable, and perfect, will of God.","M"],["Hebrews 10:23","Let us hold fast the profession of our faith without wavering; for he is faithful that promised.","M"],["Galatians 6:7-8","Be not deceived; God is not mocked: for whatsoever a man soweth, that shall he also reap. For he that soweth to his flesh shall of the flesh reap corruption; but he that soweth to the Spirit shall of the Spirit reap life everlasting.","P"],["Philippians 4:13","I can do all things through Christ which strengtheneth me.","M"],["Hebrews 3:13","But exhort one another daily, while it is called To day; lest any of you be hardened through the deceitfulness of sin.","P"],["Proverbs 12:11","He that tilleth his land shall be satisfied with bread: but he that followeth vain persons is void of understanding.","M"],["Job 23:10","But he knoweth the way that I take: when he hath tried me, I shall come forth as gold.","M"],["Romans 8:5","For they that are after the flesh do mind the things of the flesh; but they that are after the Spirit the things of the Spirit.","P"],["Isaiah 41:10","Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee; yea, I will uphold thee with the right hand of my righteousness.","M"],["Luke 16:10","He that is faithful in that which is least is faithful also in much: and he that is unjust in the least is unjust also in much.","M"],["Matthew 6:22","The light of the body is the eye: if therefore thine eye be single, thy whole body shall be full of light.","P"],["Romans 13:11","And that, knowing the time, that now it is high time to awake out of sleep: for now is our salvation nearer than when we believed.","M"],["1 Corinthians 16:13","Watch ye, stand fast in the faith, quit you like men, be strong.","M"],["Galatians 2:20","I am crucified with Christ: nevertheless I live; yet not I, but Christ liveth in me: and the life which I now live in the flesh I live by the faith of the Son of God, who loved me, and gave himself for me.","P"],["1 Timothy 4:12","Let no man despise thy youth; but be thou an example of the believers, in word, in conversation, in charity, in spirit, in faith, in purity.","M"],["Micah 6:8","He hath shewed thee, O man, what is good; and what doth the LORD require of thee, but to do justly, and to love mercy, and to walk humbly with thy God?","M"],["Luke 22:40","And when he was at the place, he said unto them, Pray that ye enter not into temptation.","P"],["Isaiah 60:1","Arise, shine; for thy light is come, and the glory of the LORD is risen upon thee.","M"],["Romans 6:12","Let not sin therefore reign in your mortal body, that ye should obey it in the lusts thereof.","P"],["Proverbs 27:1","Boast not thyself of to morrow; for thou knowest not what a day may bring forth.","M"],["Proverbs 19:15","Slothfulness casteth into a deep sleep; and an idle soul shall suffer hunger.","M"],["Daniel 1:8","But Daniel purposed in his heart that he would not defile himself with the portion of the king’s meat, nor with the wine which he drank: therefore he requested of the prince of the eunuchs that he might not defile himself.","P"],["Hebrews 12:12-13","Wherefore lift up the hands which hang down, and the feeble knees; And make straight paths for your feet, lest that which is lame be turned out of the way; but let it rather be healed.","M"],["2 Peter 1:5-7","And beside this, giving all diligence, add to your faith virtue; and to virtue knowledge; And to knowledge temperance; and to temperance patience; and to patience godliness; And to godliness brotherly kindness; and to brotherly kindness charity.","M"],["Matthew 5:8","Blessed are the pure in heart: for they shall see God.","P"],["Proverbs 16:3","Commit thy works unto the LORD , and thy thoughts shall be established.","M"],["Ecclesiastes 5:5","Better is it that thou shouldest not vow, than that thou shouldest vow and not pay.","M"],["Psalm 119:37","Turn away mine eyes from beholding vanity; and quicken thou me in thy way.","P"],["2 Timothy 2:15","Study to shew thyself approved unto God, a workman that needeth not to be ashamed, rightly dividing the word of truth.","M"],["Ephesians 6:10","Finally, my brethren, be strong in the Lord, and in the power of his might.","M"],["Isaiah 1:18","Come now, and let us reason together, saith the LORD : though your sins be as scarlet, they shall be as white as snow; though they be red like crimson, they shall be as wool.","P"],["Romans 8:37","Nay, in all these things we are more than conquerors through him that loved us.","M"],["1 Peter 5:8","Be sober, be vigilant; because your adversary the devil, as a roaring lion, walketh about, seeking whom he may devour.","P"],["1 Timothy 4:7-8","But refuse profane and old wives’ fables, and exercise thyself rather unto godliness. For bodily exercise profiteth little: but godliness is profitable unto all things, having promise of the life that now is, and of that which is to come.","M"],["1 Kings 2:2","I go the way of all the earth: be thou strong therefore, and shew thyself a man.","M"],["Proverbs 4:25-26","Let thine eyes look right on, and let thine eyelids look straight before thee. Ponder the path of thy feet, and let all thy ways be established.","P"],["Philippians 4:6","Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.","M"],["1 Corinthians 11:31","For if we would judge ourselves, we should not be judged.","M"],["Romans 6:11","Likewise reckon ye also yourselves to be dead indeed unto sin, but alive unto God through Jesus Christ our Lord.","P"],["2 Corinthians 12:9","And he said unto me, My grace is sufficient for thee: for my strength is made perfect in weakness. Most gladly therefore will I rather glory in my infirmities, that the power of Christ may rest upon me.","M"],["2 Corinthians 12:10","Therefore I take pleasure in infirmities, in reproaches, in necessities, in persecutions, in distresses for Christ’s sake: for when I am weak, then am I strong.","M"],["Hebrews 2:18","For in that he himself hath suffered being tempted, he is able to succour them that are tempted.","P"],["Proverbs 6:7-8","Which having no guide, overseer, or ruler, Provideth her meat in the summer, and gathereth her food in the harvest.","M"],["Proverbs 13:4","The soul of the sluggard desireth, and hath nothing: but the soul of the diligent shall be made fat.","M"],["Proverbs 1:10","My son, if sinners entice thee, consent thou not.","P"],["Luke 14:28","For which of you, intending to build a tower, sitteth not down first, and counteth the cost, whether he have sufficient to finish it ?","M"],["Psalm 90:17","And let the beauty of the LORD our God be upon us: and establish thou the work of our hands upon us; yea, the work of our hands establish thou it.","M"],["Romans 13:14","But put ye on the Lord Jesus Christ, and make not provision for the flesh, to fulfil the lusts thereof.","P"],["Zechariah 4:6","Then he answered and spake unto me, saying, This is the word of the LORD unto Zerubbabel, saying, Not by might, nor by power, but by my spirit, saith the LORD of hosts.","M"],["2 Peter 2:9","The Lord knoweth how to deliver the godly out of temptations, and to reserve the unjust unto the day of judgment to be punished.","P"],["Lamentations 3:22-23","It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.","M"],["Proverbs 20:4","The sluggard will not plow by reason of the cold; therefore shall he beg in harvest, and have nothing.","M"],["Psalm 119:133","Order my steps in thy word: and let not any iniquity have dominion over me.","P"],["Proverbs 16:18","Pride goeth before destruction, and an haughty spirit before a fall.","M"],["Romans 13:12","The night is far spent, the day is at hand: let us therefore cast off the works of darkness, and let us put on the armour of light.","M"],["Genesis 4:7","If thou doest well, shalt thou not be accepted? and if thou doest not well, sin lieth at the door. And unto thee shall be his desire, and thou shalt rule over him.","P"],["Proverbs 24:33-34","Yet a little sleep, a little slumber, a little folding of the hands to sleep: So shall thy poverty come as one that travelleth; and thy want as an armed man.","M"],["Matthew 6:33","But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.","M"],["Psalm 19:13","Keep back thy servant also from presumptuous sins; let them not have dominion over me: then shall I be upright, and I shall be innocent from the great transgression.","P"],["Lamentations 3:40","Let us search and try our ways, and turn again to the LORD .","M"],["Galatians 1:10","For do I now persuade men, or God? or do I seek to please men? for if I yet pleased men, I should not be the servant of Christ.","M"],["Jude 1:24","Now unto him that is able to keep you from falling, and to present you faultless before the presence of his glory with exceeding joy.","P"],["Proverbs 3:5-6","Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.","M"],["Romans 8:13","For if ye live after the flesh, ye shall die: but if ye through the Spirit do mortify the deeds of the body, ye shall live.","P"],["James 4:17","Therefore to him that knoweth to do good, and doeth it not, to him it is sin.","M"],["Psalm 138:8","The LORD will perfect that which concerneth me: thy mercy, O LORD , endureth for ever: forsake not the works of thine own hands.","M"],["Matthew 5:27-28","Ye have heard that it was said by them of old time, Thou shalt not commit adultery: But I say unto you, That whosoever looketh on a woman to lust after her hath committed adultery with her already in his heart.","P"],["Joshua 1:8","This book of the law shall not depart out of thy mouth; but thou shalt meditate therein day and night, that thou mayest observe to do according to all that is written therein: for then thou shalt make thy way prosperous, and then thou shalt have good success.","M"],["Proverbs 15:22","Without counsel purposes are disappointed: but in the multitude of counsellors they are established.","M"],["Genesis 39:12","And she caught him by his garment, saying, Lie with me: and he left his garment in her hand, and fled, and got him out.","P"],["Ephesians 5:15-16","See then that ye walk circumspectly, not as fools, but as wise, Redeeming the time, because the days are evil.","M"],["Matthew 25:21","His lord said unto him, Well done, thou good and faithful servant: thou hast been faithful over a few things, I will make thee ruler over many things: enter thou into the joy of thy lord.","M"],["Genesis 39:9","There is none greater in this house than I; neither hath he kept back any thing from me but thee, because thou art his wife: how then can I do this great wickedness, and sin against God?","P"],["Proverbs 10:4","He becometh poor that dealeth with a slack hand: but the hand of the diligent maketh rich.","M"],["Luke 9:62","And Jesus said unto him, No man, having put his hand to the plough, and looking back, is fit for the kingdom of God.","M"],["Proverbs 16:32","He that is slow to anger is better than the mighty; and he that ruleth his spirit than he that taketh a city.","P"],["John 15:5","I am the vine, ye are the branches: He that abideth in me, and I in him, the same bringeth forth much fruit: for without me ye can do nothing.","M"],["Matthew 6:13","And lead us not into temptation, but deliver us from evil: For thine is the kingdom, and the power, and the glory, for ever. Amen.","P"],["1 Corinthians 9:24","Know ye not that they which run in a race run all, but one receiveth the prize? So run, that ye may obtain.","M"],["Ecclesiastes 3:1","To every thing there is a season, and a time to every purpose under the heaven.","M"],["1 John 5:4","For whatsoever is born of God overcometh the world: and this is the victory that overcometh the world, even our faith.","P"],["2 Corinthians 4:18","While we look not at the things which are seen, but at the things which are not seen: for the things which are seen are temporal; but the things which are not seen are eternal.","M"],["Proverbs 24:10","If thou faint in the day of adversity, thy strength is small.","M"],["Isaiah 55:7","Let the wicked forsake his way, and the unrighteous man his thoughts: and let him return unto the LORD , and he will have mercy upon him; and to our God, for he will abundantly pardon.","P"],["Psalm 55:22","Cast thy burden upon the LORD , and he shall sustain thee: he shall never suffer the righteous to be moved.","M"],["Nehemiah 4:6","So built we the wall; and all the wall was joined together unto the half thereof: for the people had a mind to work.","M"],["Ephesians 4:27","Neither give place to the devil.","P"],["Psalm 90:12","So teach us to number our days, that we may apply our hearts unto wisdom.","M"],["Habakkuk 3:19","The LORD God is my strength, and he will make my feet like hinds’ feet , and he will make me to walk upon mine high places. To the chief singer on my stringed instruments.","M"],["James 4:7","Submit yourselves therefore to God. Resist the devil, and he will flee from you.","P"],["Psalm 18:32","It is God that girdeth me with strength, and maketh my way perfect.","M"],["Ephesians 5:3","But fornication, and all uncleanness, or covetousness, let it not be once named among you, as becometh saints.","P"],["Hebrews 12:3","For consider him that endured such contradiction of sinners against himself, lest ye be wearied and faint in your minds.","M"],["Romans 15:13","Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.","M"],["Psalm 119:9","Wherewithal shall a young man cleanse his way? by taking heed thereto according to thy word.","P"],["Psalm 39:4","LORD , make me to know mine end, and the measure of my days, what it is; that I may know how frail I am .","M"],["1 Peter 5:10","But the God of all grace, who hath called us unto his eternal glory by Christ Jesus, after that ye have suffered a while, make you perfect, stablish, strengthen, settle you .","M"],["Romans 6:6","Knowing this, that our old man is crucified with him , that the body of sin might be destroyed, that henceforth we should not serve sin.","P"],["Psalm 31:24","Be of good courage, and he shall strengthen your heart, all ye that hope in the LORD .","M"],["Jeremiah 17:7","Blessed is the man that trusteth in the LORD , and whose hope the LORD is.","M"],["Psalm 141:4","Incline not my heart to any evil thing, to practise wicked works with men that work iniquity: and let me not eat of their dainties.","P"],["Habakkuk 2:3","For the vision is yet for an appointed time, but at the end it shall speak, and not lie: though it tarry, wait for it; because it will surely come, it will not tarry.","M"],["Matthew 5:16","Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.","M"],["Proverbs 23:26","My son, give me thine heart, and let thine eyes observe my ways.","P"],["Proverbs 12:24","The hand of the diligent shall bear rule: but the slothful shall be under tribute.","M"],["Psalm 103:12","As far as the east is from the west, so far hath he removed our transgressions from us.","P"],["Psalm 57:8","Awake up, my glory; awake, psaltery and harp: I myself will awake early.","M"],["Psalm 46:10","Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.","M"],["Psalm 24:3-4","Who shall ascend into the hill of the LORD ? or who shall stand in his holy place? He that hath clean hands, and a pure heart; who hath not lifted up his soul unto vanity, nor sworn deceitfully.","P"],["Proverbs 21:5","The thoughts of the diligent tend only to plenteousness; but of every one that is hasty only to want.","M"],["Micah 7:8","Rejoice not against me, O mine enemy: when I fall, I shall arise; when I sit in darkness, the LORD shall be a light unto me.","M"],["Galatians 5:1","Stand fast therefore in the liberty wherewith Christ hath made us free, and be not entangled again with the yoke of bondage.","P"],["Matthew 5:37","But let your communication be, Yea, yea; Nay, nay: for whatsoever is more than these cometh of evil.","M"],["Philippians 4:7","And the peace of God, which passeth all understanding, shall keep your hearts and minds through Christ Jesus.","M"],["Job 31:1","I made a covenant with mine eyes; why then should I think upon a maid?","P"],["2 Corinthians 5:7","For we walk by faith, not by sight.","M"],["Romans 12:12","Rejoicing in hope; patient in tribulation; continuing instant in prayer.","M"],["Revelation 3:21","To him that overcometh will I grant to sit with me in my throne, even as I also overcame, and am set down with my Father in his throne.","P"],["Proverbs 6:9-11","How long wilt thou sleep, O sluggard? when wilt thou arise out of thy sleep? Yet a little sleep, a little slumber, a little folding of the hands to sleep: So shall thy poverty come as one that travelleth, and thy want as an armed man.","M"],["Job 8:7","Though thy beginning was small, yet thy latter end should greatly increase.","M"],["John 8:36","If the Son therefore shall make you free, ye shall be free indeed.","P"],["Galatians 6:4","But let every man prove his own work, and then shall he have rejoicing in himself alone, and not in another.","M"],["2 Corinthians 5:17","Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new.","P"],["Hebrews 11:6","But without faith it is impossible to please him : for he that cometh to God must believe that he is, and that he is a rewarder of them that diligently seek him.","M"],["2 Timothy 2:3","Thou therefore endure hardness, as a good soldier of Jesus Christ.","M"],["1 John 4:4","Ye are of God, little children, and have overcome them: because greater is he that is in you, than he that is in the world.","P"],["Daniel 6:10","Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.","M"],["Psalm 4:8","I will both lay me down in peace, and sleep: for thou, LORD , only makest me dwell in safety.","M"],["1 Thessalonians 5:22","Abstain from all appearance of evil.","P"],["Isaiah 43:2","When thou passest through the waters, I will be with thee; and through the rivers, they shall not overflow thee: when thou walkest through the fire, thou shalt not be burned; neither shall the flame kindle upon thee.","M"],["Habakkuk 2:2","And the LORD answered me, and said, Write the vision, and make it plain upon tables, that he may run that readeth it.","M"],["Romans 8:1","There is therefore now no condemnation to them which are in Christ Jesus, who walk not after the flesh, but after the Spirit.","P"],["Ephesians 2:10","For we are his workmanship, created in Christ Jesus unto good works, which God hath before ordained that we should walk in them.","M"],["Psalm 5:3","My voice shalt thou hear in the morning, O LORD ; in the morning will I direct my prayer unto thee, and will look up.","M"],["2 Timothy 2:22","Flee also youthful lusts: but follow righteousness, faith, charity, peace, with them that call on the Lord out of a pure heart.","P"],["Psalm 63:6","When I remember thee upon my bed, and meditate on thee in the night watches.","M"],["2 Timothy 2:21","If a man therefore purge himself from these, he shall be a vessel unto honour, sanctified, and meet for the master’s use, and prepared unto every good work.","P"],["Psalm 90:14","O satisfy us early with thy mercy; that we may rejoice and be glad all our days.","M"],["James 1:5","If any of you lack wisdom, let him ask of God, that giveth to all men liberally, and upbraideth not; and it shall be given him.","M"],["Colossians 3:5","Mortify therefore your members which are upon the earth; fornication, uncleanness, inordinate affection, evil concupiscence, and covetousness, which is idolatry.","P"],["Psalm 1:3","And he shall be like a tree planted by the rivers of water, that bringeth forth his fruit in his season; his leaf also shall not wither; and whatsoever he doeth shall prosper.","M"],["Ecclesiastes 9:10","Whatsoever thy hand findeth to do, do it with thy might; for there is no work, nor device, nor knowledge, nor wisdom, in the grave, whither thou goest.","M"],["Hebrews 12:14","Follow peace with all men , and holiness, without which no man shall see the Lord.","P"],["Romans 12:11","Not slothful in business; fervent in spirit; serving the Lord.","M"],["2 Timothy 1:7","For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.","M"],["1 Corinthians 6:19-20","What? know ye not that your body is the temple of the Holy Ghost which is in you, which ye have of God, and ye are not your own? For ye are bought with a price: therefore glorify God in your body, and in your spirit, which are God’s.","P"],["Psalm 77:6","I call to remembrance my song in the night: I commune with mine own heart: and my spirit made diligent search.","M"],["Proverbs 29:18","Where there is no vision, the people perish: but he that keepeth the law, happy is he.","M"],["1 Corinthians 10:12","Wherefore let him that thinketh he standeth take heed lest he fall.","P"],["Psalm 37:23-24","The steps of a good man are ordered by the LORD : and he delighteth in his way. Though he fall, he shall not be utterly cast down: for the LORD upholdeth him with his hand.","M"],["Titus 2:11-12","For the grace of God that bringeth salvation hath appeared to all men, Teaching us that, denying ungodliness and worldly lusts, we should live soberly, righteously, and godly, in this present world.","P"],["Proverbs 13:18","Poverty and shame shall be to him that refuseth instruction: but he that regardeth reproof shall be honoured.","M"],["Matthew 7:7","Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you.","M"],["Matthew 26:41","Watch and pray, that ye enter not into temptation: the spirit indeed is willing, but the flesh is weak.","P"],["Proverbs 26:14","As the door turneth upon his hinges, so doth the slothful upon his bed.","M"],["Psalm 144:1","Blessed be the LORD my strength, which teacheth my hands to war, and my fingers to fight.","M"],["1 Corinthians 6:11","And such were some of you: but ye are washed, but ye are sanctified, but ye are justified in the name of the Lord Jesus, and by the Spirit of our God.","P"],["Romans 8:18","For I reckon that the sufferings of this present time are not worthy to be compared with the glory which shall be revealed in us.","M"],["Philippians 3:13-14","Brethren, I count not myself to have apprehended: but this one thing I do , forgetting those things which are behind, and reaching forth unto those things which are before, I press toward the mark for the prize of the high calling of God in Christ Jesus.","M"],["Galatians 5:16","This I say then, Walk in the Spirit, and ye shall not fulfil the lust of the flesh.","P"],["Ecclesiastes 7:8","Better is the end of a thing than the beginning thereof: and the patient in spirit is better than the proud in spirit.","M"],["1 Timothy 4:16","Take heed unto thyself, and unto the doctrine; continue in them: for in doing this thou shalt both save thyself, and them that hear thee.","M"],["2 Corinthians 7:1","Having therefore these promises, dearly beloved, let us cleanse ourselves from all filthiness of the flesh and spirit, perfecting holiness in the fear of God.","P"],["Deuteronomy 31:6","Be strong and of a good courage, fear not, nor be afraid of them: for the LORD thy God, he it is that doth go with thee; he will not fail thee, nor forsake thee.","M"],["1 Peter 1:14","As obedient children, not fashioning yourselves according to the former lusts in your ignorance.","P"],["Proverbs 12:1","Whoso loveth instruction loveth knowledge: but he that hateth reproof is brutish.","M"],["Psalm 121:1-2","I will lift up mine eyes unto the hills, from whence cometh my help. My help cometh from the LORD , which made heaven and earth.","M"],["Proverbs 22:3","A prudent man foreseeth the evil, and hideth himself: but the simple pass on, and are punished.","P"],["2 Corinthians 4:8-9","We are troubled on every side, yet not distressed; we are perplexed, but not in despair; Persecuted, but not forsaken; cast down, but not destroyed.","M"],["John 14:27","Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you. Let not your heart be troubled, neither let it be afraid.","M"],["James 4:8","Draw nigh to God, and he will draw nigh to you. Cleanse your hands, ye sinners; and purify your hearts, ye double minded.","P"],["Luke 9:23","And he said to them all, If any man will come after me, let him deny himself, and take up his cross daily, and follow me.","M"],["Ecclesiastes 12:1","Remember now thy Creator in the days of thy youth, while the evil days come not, nor the years draw nigh, when thou shalt say, I have no pleasure in them.","M"],["Proverbs 7:25","Let not thine heart decline to her ways, go not astray in her paths.","P"],["Psalm 119:59","I thought on my ways, and turned my feet unto thy testimonies.","M"],["Galatians 6:9","And let us not be weary in well doing: for in due season we shall reap, if we faint not.","M"],["Galatians 5:24","And they that are Christ’s have crucified the flesh with the affections and lusts.","P"],["1 Chronicles 28:20","And David said to Solomon his son, Be strong and of good courage, and do it: fear not, nor be dismayed: for the LORD God, even my God, will be with thee; he will not fail thee, nor forsake thee, until thou hast finished all the work for the service of the house of the LORD .","M"],["Proverbs 28:13","He that covereth his sins shall not prosper: but whoso confesseth and forsaketh them shall have mercy.","P"]];
+const INBOX_ONLY = false;
+const INBOX_URL = 'https://claude.ai/artifact/DVhJTLVmdwV8U7HqG9a9Ag#inbox';
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseKey = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); };
+const todayKey = () => keyOf(new Date());
+const toMin = t => { const [h, m] = String(t || '0:0').split(':').map(Number); return h * 60 + (m || 0); };
+const fromMin = m => { m = ((m % 1440) + 1440) % 1440; return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; };
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const doy = (d = new Date()) => Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 1)) / 864e5);
+const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const fmtDay = k => { const d = parseKey(k); return `${DOW[d.getDay()]} ${pad(d.getDate())} ${MON[d.getMonth()]}`; };
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const dur = mins => { mins = Math.max(0, Math.round(mins)); const h = Math.floor(mins / 60), m = mins % 60; return h ? `${h}h ${pad(m)}m` : `${m}m`; };
+const ago = ts => { const s = (Date.now() - ts) / 1000; if (s < 60) return 'just now'; if (s < 3600) return `${Math.floor(s / 60)} min ago`; if (s < 86400) return `${Math.floor(s / 3600)} h ago`; return `${Math.floor(s / 86400)} d ago`; };
+const CHECK = '<svg viewBox="0 0 12 12"><path d="M2.5 6.3 5 8.7l4.6-5.2"/></svg>';
+const LOCK = '<svg viewBox="0 0 12 12"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg>';
+const MARK = (tick = '#FF5A1F', ring = 'currentColor') => `<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="44" fill="none" stroke="${ring}" stroke-width="11"/><rect x="54.5" y="22" width="11" height="24" rx="2" fill="${tick}"/></svg>`;
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+
+/* ================= defaults ================= */
+const DEFAULT_ROUTINE = [
+  { id: 'r1', t: '06:00', l: 'Wake · water · make the bed' },
+  { id: 'r2', t: '06:20', l: 'Train' },
+  { id: 'r3', t: '07:10', l: 'School' },
+  { id: 'r4', t: '16:30', l: 'Deep work · assignments' },
+  { id: 'r5', t: '18:30', l: 'Build · projects' },
+  { id: 'r6', t: '21:00', l: 'Read · no screens' },
+  { id: 'r7', t: '22:30', l: 'Lights out' }
+];
+const DEFAULT_RULES = [
+  { h: 'structure your day with precision', b: ['wake up at the same time every day, no exceptions', 'routines remove emotion from decisions', 'order creates dominance'] },
+  { h: 'guard your eyes', b: ['what you consume shapes what you crave', 'no phone in bed, no exceptions', 'leave the room, do not negotiate'] },
+  { h: 'train the body', b: ['move every day', 'the body keeps the mind honest', 'track the numbers, beat last week'] },
+  { h: 'protect deep work', b: ['one task, phone in another room', 'start before you feel ready', 'finish what you open'] },
+  { h: 'speak less, execute more', b: ['announce results, not plans', 'keep the promises you make to yourself first'] },
+  { h: 'control your inputs', b: ['sleep, food, people, content', 'cut what drains you', 'keep what sharpens you'] },
+  { h: 'end the day reviewing yourself', b: ["analyze what worked and what didn't", 'correct quietly, improve daily', 'perfection is built in repetition'] }
+];
+const TIERS = [
+  { n: 'STEEL', at: 0 }, { n: 'GOLD', at: 7 }, { n: 'PLATINUM', at: 30 }, { n: 'BLACK', at: 90 }
+];
+
+/* ================= state + storage ================= */
+const S = { settings: null, days: {}, inbox: { ai: false, tri: {} }, tasks: { items: [] }, calc: null, draft: {}, holding: false };
+const LOCAL_KEY = 'lifeos.v1';
+function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}') || {}; } catch (e) { return {}; } }
+function writeLocal(docs) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(docs)); } catch (e) { } }
+
+const Store = {
+  mode: 'init', col: null, docs: {}, dirty: {}, q: {}, timers: {}, loaded: false, slow: false,
+  async init() {
+    let db = null, user = null, uid = null;
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
+    if (false) {
+      try { [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]); } catch (e) { }
+      if (db && user) { try { uid = await user.id(); } catch (e) { } }
+    }
+    if (db && uid) {
+      this.mode = 'db';
+      this.col = db.collection('data/users/' + uid);
+      this.subscribe();
+    } else {
+      this.mode = 'local'; this.docs = readLocal(); this.loaded = true; onData();
+    }
+  },
+  subscribe() {
+    const timer = setTimeout(() => { if (!this.loaded) { this.slow = true; onData(); } }, 10000);
+    this.col.onSnapshot(snap => {
+      const next = {};
+      snap.docs.forEach(d => { if (d.exists) next[d.id] = d.data(); });
+      for (const id in this.dirty) next[id] = this.docs[id];
+      this.docs = next;
+      if (!snap.metadata.fromCache) { this.loaded = true; this.slow = false; clearTimeout(timer); }
+      onData();
+    }, err => {
+      clearTimeout(timer); this.loaded = true; this.err = err;
+      toast(err.code === 'quota_exceeded' ? 'Storage is full.' : 'Your saved data could not be reached.');
+      onData();
+    });
+  },
+  put(id, data, delay = 0) {
+    this.docs[id] = data;
+    if (this.mode === 'db') {
+      this.dirty[id] = true;
+      clearTimeout(this.timers[id]);
+      this.timers[id] = setTimeout(() => {
+        const body = this.docs[id];
+        const prev = this.q[id] || Promise.resolve();
+        const p = prev.then(() => this.col.doc(id).set(body)).catch(e => { toast(e && e.code === 'quota_exceeded' ? 'Storage is full.' : 'Not saved. Check your connection.'); });
+        this.q[id] = p;
+        p.then(() => { if (this.q[id] === p) delete this.dirty[id]; });
+      }, delay);
+    } else writeLocal(this.docs);
+    onData();
+  }
+};
+
+/* ================= derived logic ================= */
+function effWake(k) { const s = S.settings; return (s.next && k >= s.next.from) ? s.next.wake : s.wake; }
+function effWin(k) { const s = S.settings; return Number((s.next && k >= s.next.from && s.next.win) ? s.next.win : s.win) || 10; }
+function phase(k = todayKey(), m = nowMin()) {
+  const w = toMin(effWake(k)), W = effWin(k), rev = toMin(S.settings.rev);
+  if (m < w - W) return 'pre';
+  if (m <= w + W) return 'wake';
+  if (m < rev) return 'day';
+  return 'night';
+}
+function dayStatus(k, t = todayKey()) {
+  const s = S.settings; if (!s || k < s.start) return 'off';
+  if (k > t) return 'fut';
+  const d = S.days[k] || {};
+  const ok = !!(d.wake && d.wake.ok), rev = !!d.rev;
+  if (ok && rev) return 'win';
+  if (k < t) return 'loss';
+  const ph = phase(k);
+  if (!ok && (ph === 'day' || ph === 'night')) return 'loss';
+  return 'open';
+}
+function compute() {
+  const s = S.settings, t = todayKey();
+  let tier = 0, streak = 0, best = 0, wins = 0, losses = 0;
+  if (s) for (let k = s.start, guard = 0; k <= t && guard < 4000; k = addDays(k, 1), guard++) {
+    const st = dayStatus(k, t);
+    if (st === 'win') { streak++; wins++; best = Math.max(best, streak); if (tier < 3 && streak >= TIERS[tier + 1].at) tier++; }
+    else if (st === 'loss') { streak = 0; losses++; tier = Math.max(0, tier - 1); }
+  }
+  return { tier, streak, best, wins, losses, next: tier < 3 ? TIERS[tier + 1] : null };
+}
+function dayKeyDoc(k) { return 'd-' + k; }
+function getDay(k) { return clone(S.days[k]) || {}; }
+function putDay(k, d, delay) { Store.put(dayKeyDoc(k), d, delay); }
+
+function onData() {
+  const docs = Store.docs;
+  S.settings = docs.settings ? clone(docs.settings) : null;
+  S.days = {};
+  for (const id in docs) if (id.startsWith('d-')) S.days[id.slice(2)] = docs[id];
+  S.inbox = docs.inbox ? clone(docs.inbox) : { ai: false, tri: {} };
+  if (!S.inbox.tri) S.inbox.tri = {};
+  S.tasks = docs.tasks ? clone(docs.tasks) : { items: [] };
+  if (!Store.loaded && !S.settings) { renderAll(); return; }
+  if (!S.settings) { if (!INBOX_ONLY) openOnboarding(); renderAll(); return; }
+  if (S.settings.next && todayKey() >= S.settings.next.from) {
+    const s = clone(S.settings); s.wake = s.next.wake; if (s.next.win) s.win = s.next.win; s.next = null;
+    Store.put('settings', s); return;
+  }
+  if (sheetMode === 'onboarding') closeSheet();
+  S.calc = compute();
+  renderAll();
+}
+
+/* ================= rendering ================= */
+const panels = { now: '#p-now', inbox: '#p-inbox', rules: '#p-rules', stats: '#p-stats' };
+const pending = new Set();
+function canRender(sel) {
+  const p = $(sel); const a = document.activeElement;
+  if (S.holding) return false;
+  if (a && p.contains(a) && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) return false;
+  return true;
+}
+function paint(sel, html) { if (!canRender(sel)) { pending.add(sel); return; } $(sel + ' > .wrap').innerHTML = html; pending.delete(sel); bind(sel); }
+document.addEventListener('focusout', () => setTimeout(() => { for (const sel of [...pending]) { if (sel === '#p-now') renderNow(); if (sel === '#p-inbox') renderInbox(); } }, 50));
+
+function renderAll() { renderNow(); renderInbox(); renderRules(); renderStats(); tickClock(); }
+
+function badge(tier, big) {
+  const t = TIERS[tier];
+  if (!big) return `<span class="badge t${tier}">${MARK(tier === 3 ? '#FF5A1F' : 'currentColor', 'currentColor')}${t.n}</span>`;
+  const c = S.calc; const nx = c.next;
+  return `<div class="badge-lg t${tier} shine"><div class="bl-top"><span>LIFEOS · TIER ${tier + 1}/4</span>${MARK(tier === 3 ? '#FF5A1F' : 'currentColor', 'currentColor')}</div>
+    <div><div class="bl-name">${t.n}</div><div class="bl-sub">${nx ? `${c.streak}/${nx.at} DAYS TO ${nx.n}` : 'TOP TIER · HOLD IT'}</div></div></div>`;
+}
+
+function loadingHTML() {
+  if (Store.loaded && !S.settings) return `<div class="card"><div class="label">Inbox mode</div><p class="dim" style="margin:8px 0 0">This is your LIFEOS Gmail inbox. Your routine, review and streak live in the LIFEOS app on your home screen.</p></div>`;
+  return `<div class="card"><div class="label">Loading</div><p class="dim" style="margin:8px 0 0">${Store.slow ? "Can't reach your saved data yet. Check your connection; LIFEOS keeps trying." : 'Opening your data…'}</p></div>`;
+}
+
+function renderNow() {
+  const sel = '#p-now';
+  if (!S.settings || !S.calc) return paint(sel, loadingHTML());
+  const s = S.settings, t = todayKey(), ph = phase(), d = S.days[t] || {}, c = S.calc;
+  const w = effWake(t), W = effWin(t), wm = toMin(w), m = nowMin();
+  const practice = t < s.start;
+  const y = S.days[addDays(t, -1)]; const yfix = y && y.rev && y.rev.f;
+  const vi = doy() % VERSES.length, v = VERSES[vi] || ['', '', 'M'];
+  const ri = s.rules.length ? doy() % s.rules.length : -1, rule = s.rules[ri];
+  const st = dayStatus(t);
+  const labels = {
+    pre: `Rest · check-in opens ${fromMin(wm - W)}`,
+    wake: `Wake window · closes ${fromMin(wm + W)}`,
+    day: `Execute · review opens ${s.rev}`,
+    night: `Review · closes 23:59`
+  };
+  let h = '';
+  h += `<section><div class="eyebrow"><span class="pip ${ph === 'pre' ? 'off' : ''}"></span><span class="label">${esc(labels[ph])}</span></div>
+    <div class="streak"><div><div class="big num">${c.streak}</div><div class="label" style="margin-top:8px">day streak · best ${c.best}</div></div>
+    <div class="streak-meta">${badge(c.tier)}<span class="label">${st === 'win' ? 'today: won' : st === 'loss' ? 'today: lost' : st === 'off' ? 'practice day' : 'today: open'}</span></div></div></section>`;
+
+  if (practice) h += `<div class="banner"><b>Day 1 starts ${esc(fmtDay(s.start).toLowerCase())}.</b> Today is practice: use the routine and tonight's review, nothing counts yet.</div>`;
+
+  // wake
+  if (d.wake) {
+    h += `<div class="status ${d.wake.ok ? 'ok' : 'bad'}"><span class="mk">${CHECK}</span>Woke ${esc(d.wake.time)} · ${d.wake.ok ? 'on time' : 'late'} (target ${esc(d.wake.target)})</div>`;
+  } else if (ph === 'wake' && !practice) {
+    h += `<section class="card hold-card"><button class="hold" id="hold-wake" aria-label="Hold to check in">
+      <svg viewBox="0 0 120 120"><circle class="h-track" cx="60" cy="60" r="44"/><circle class="h-fill" cx="60" cy="60" r="44" pathLength="100" transform="rotate(-90 60 60)"/><rect class="h-tick" x="55.5" y="23" width="9" height="22" rx="1.5"/></svg>
+      <span class="hold-txt">HOLD</span></button>
+      <div><div class="h-title">Check in</div><div class="dim small">Hold the ring for 1.5 s.<br>Window closes ${fromMin(wm + W)} · <span class="num" id="win-left">${dur(wm + W - m)}</span> left</div></div></section>`;
+  } else if (ph === 'pre') {
+    h += `<section class="card"><div class="label">Check-in opens ${fromMin(wm - W)}</div><div class="countdown num" id="cd">${dur(wm - W - m)}</div><div class="dim small">Wake target ${esc(w)} ±${W} min. Miss it and the streak resets.</div></section>`;
+  } else if (!practice) {
+    h += `<div class="status bad"><span class="mk">×</span>Missed the wake window (${esc(w)} ±${W}). Streak reset.</div>`;
+  }
+
+  // yesterday's fix
+  if (yfix && ph !== 'night') h += `<section class="fix"><div class="label">Yesterday's fix</div><p>${esc(yfix)}</p></section>`;
+
+  // review (night first)
+  const reviewHTML = renderReview(t, d, ph);
+  if (ph === 'night') h += reviewHTML;
+
+  // routine
+  if (s.routine.length) {
+    const done = d.done || {}; const n = s.routine.length; const nd = s.routine.filter(r => done[r.id]).length;
+    let cur = -1; s.routine.forEach((r, i) => { if (toMin(r.t) <= m) cur = i; });
+    h += `<section class="block"><div class="block-h"><span class="label">Routine</span><span class="label num">${nd}/${n}</span></div><ul class="routine">` +
+      s.routine.map((r, i) => `<li class="${done[r.id] ? 'done' : ''} ${i === cur && ph !== 'pre' ? 'cur' : ''}"><button data-r="${esc(r.id)}" aria-pressed="${!!done[r.id]}"><span class="rt num">${esc(r.t)}</span><span class="rl">${esc(r.l)}</span><span class="rc">${CHECK}</span></button></li>`).join('') + `</ul></section>`;
+  }
+  if (ph !== 'night') h += reviewHTML;
+
+  // verse
+  h += `<section class="card verse"><div class="label"><span class="kind ${v[2] === 'P' ? 'p' : ''}">${v[2] === 'P' ? 'Purity' : 'Strength'}</span> · day ${vi + 1}/365</div><blockquote>${esc(v[1])}</blockquote><div class="ref num">${esc(v[0])} · KJV</div></section>`;
+
+  // rule
+  if (rule) h += `<button class="rule-mini" data-go="2"><span class="num">RULE ${pad(ri + 1)}</span><span>${esc(rule.h)}</span><span class="dim">→</span></button>`;
+  paint(sel, h);
+}
+
+function renderReview(t, d, ph) {
+  const s = S.settings;
+  if (d.rev) {
+    return `<section class="block closed"><div class="block-h"><span class="label lock">${LOCK} Day closed · locked</span><span class="label num">${d.rev.s}/10</span></div>
+      <dl><div><dt>Worked</dt><dd>${esc(d.rev.w)}</dd></div><div><dt>Didn't</dt><dd>${esc(d.rev.d)}</dd></div><div><dt>Fix for tomorrow</dt><dd>${esc(d.rev.f)}</dd></div></dl></section>`;
+  }
+  if (ph === 'night') {
+    const dr = S.draft[t] || loadDraft(t);
+    return `<section class="block review" id="review"><div class="block-h"><span class="label">Night review</span><span class="label">locks when submitted</span></div>
+      <label for="rv-w">What worked</label><textarea id="rv-w" rows="2" data-k="w">${esc(dr.w)}</textarea>
+      <label for="rv-d">What didn't</label><textarea id="rv-d" rows="2" data-k="d">${esc(dr.d)}</textarea>
+      <label for="rv-f">One fix for tomorrow</label><textarea id="rv-f" rows="2" data-k="f">${esc(dr.f)}</textarea>
+      <div class="label" style="margin-top:6px">Score the day</div>
+      <div class="score" role="radiogroup" aria-label="Day score">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button role="radio" aria-checked="${dr.s === n}" data-s="${n}">${n}</button>`).join('')}</div>
+      <button class="hold-wide" id="hold-rev"><span class="hw-fill"></span><span class="hw-text">Hold to lock the day</span></button>
+      <div class="err" id="rv-err" role="alert"></div></section>`;
+  }
+  if (ph === 'day') return `<p class="note">Night review opens ${esc(s.rev)} and closes 23:59.</p>`;
+  return '';
+}
+function loadDraft(t) { try { const v = JSON.parse(localStorage.getItem('lifeos.draft.' + t) || 'null'); if (v) { S.draft[t] = v; return v; } } catch (e) { } S.draft[t] = { w: '', d: '', f: '', s: 0 }; return S.draft[t]; }
+function saveDraft(t) { try { localStorage.setItem('lifeos.draft.' + t, JSON.stringify(S.draft[t])); } catch (e) { } }
+
+function renderRules() {
+  const sel = '#p-rules';
+  if (!S.settings) return paint(sel, loadingHTML());
+  const rules = S.settings.rules; const ri = rules.length ? doy() % rules.length : -1; const r = rules[ri];
+  let h = '';
+  if (r) h += `<section class="rule-hero"><div class="label">Rule of the day</div><div class="n num" style="margin-top:14px">${pad(ri + 1)}</div><h2>${esc(r.h)}</h2><ul class="bul">${r.b.map(b => `<li>${esc(b)}</li>`).join('')}</ul></section>`;
+  h += `<section class="block"><div class="block-h"><span class="label">All rules · ${rules.length}</span><button class="label" id="edit-rules" style="color:var(--text)">Edit</button></div><ul class="rlist">` +
+    rules.map((x, i) => `<li class="${i === ri ? 'today' : ''}"><details><summary><span class="num dim">${pad(i + 1)}</span><span>${esc(x.h)}</span></summary><ul class="bul">${x.b.map(b => `<li>${esc(b)}</li>`).join('')}</ul></details></li>`).join('') + `</ul></section>`;
+  h += `<p class="note">One rule is shown per day, in order. They repeat every ${rules.length} days.</p>`;
+  paint(sel, h);
+}
+
+function renderStats() {
+  const sel = '#p-stats';
+  if (!S.settings || !S.calc) return paint(sel, loadingHTML());
+  const c = S.calc, t = todayKey(), s = S.settings;
+  const pct = c.next ? Math.min(100, Math.round(c.streak / c.next.at * 100)) : 100;
+  const scores7 = []; for (let i = 0; i < 7; i++) { const d = S.days[addDays(t, -i)]; if (d && d.rev) scores7.push(d.rev.s); }
+  const avg7 = scores7.length ? (scores7.reduce((a, b) => a + b, 0) / scores7.length).toFixed(1) : '–';
+  const rate = c.wins + c.losses ? Math.round(c.wins / (c.wins + c.losses) * 100) + '%' : '–';
+  let h = `<section class="block">${badge(c.tier, true)}<div class="prog" aria-label="Progress to next tier"><i style="width:${pct}%"></i></div></section>`;
+  h += `<section class="tiles"><div class="tile"><div class="label">Streak</div><div class="v">${c.streak}</div></div><div class="tile"><div class="label">Best</div><div class="v">${c.best}</div></div><div class="tile"><div class="label">Days won</div><div class="v">${rate}</div></div><div class="tile"><div class="label">Avg score · 7d</div><div class="v">${avg7}</div></div></section>`;
+  // heatmap
+  const dow = (parseKey(t).getDay() + 6) % 7; const mon = addDays(t, -dow); const start = addDays(mon, -77);
+  let cells = '';
+  for (let i = 0; i < 84; i++) {
+    const k = addDays(start, i); const stt = dayStatus(k, t); const d = S.days[k];
+    const a = stt === 'win' && d && d.rev ? (0.3 + 0.7 * (d.rev.s / 10)).toFixed(2) : 1;
+    const cls = { win: 'win', loss: 'loss', open: 'open', off: 'off', fut: 'fut' }[stt];
+    cells += `<i class="${cls}" style="--a:${a}" title="${k}"></i>`;
+  }
+  h += `<section class="block"><div class="block-h"><span class="label">Last 12 weeks</span><span class="label">Mon → Sun</span></div><div class="heat" role="img" aria-label="Daily results for the last 12 weeks">${cells}</div>
+    <div class="legend"><span><i style="background:var(--text)"></i>won (brighter = higher score)</span><span><i style="background:rgba(217,83,74,.45)"></i>lost</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--accent)"></i>today</span></div></section>`;
+  // this week
+  let wakeOk = 0, revs = 0, rDone = 0, rTot = 0, sc = []; const fixes = [];
+  for (let i = 0; i <= dow; i++) {
+    const k = addDays(mon, i); const d = S.days[k] || {};
+    if (d.wake && d.wake.ok) wakeOk++;
+    if (d.rev) { revs++; sc.push(d.rev.s); fixes.push([k, d.rev.f]); }
+    if (k >= s.start || d.done) { rTot += s.routine.length; rDone += s.routine.filter(r => d.done && d.done[r.id]).length; }
+  }
+  const n = dow + 1;
+  h += `<section class="block"><span class="label">This week</span><div class="wk">
+    <div><div class="label">Wake</div><div class="v">${wakeOk}/${n}</div></div><div><div class="label">Reviews</div><div class="v">${revs}/${n}</div></div>
+    <div><div class="label">Score</div><div class="v">${sc.length ? (sc.reduce((a, b) => a + b, 0) / sc.length).toFixed(1) : '–'}</div></div><div><div class="label">Routine</div><div class="v">${rTot ? Math.round(rDone / rTot * 100) + '%' : '–'}</div></div></div>
+    ${fixes.length ? `<ul class="fixes">${fixes.map(([k, f]) => `<li><span class="label">${fmtDay(k).slice(0, 3)}</span><span>${esc(f)}</span></li>`).join('')}</ul>` : '<p class="note">Fixes from this week\'s reviews show up here.</p>'}
+    <div id="ai-week"></div></section>`;
+  h += `<section class="block"><span class="label">Tiers</span><div class="ladder">${TIERS.map((x, i) => `<div>${badge(i)}<span class="label">${x.at ? x.at + ' days' : 'start'}</span></div>`).join('')}</div>
+    <p class="note">A day is won when you check in on time and lock the review. Streak hits the number → you move up. Lose a day → streak resets to 0 and you drop one tier.</p></section>`;
+  paint(sel, h);
+  renderAiWeek();
+}
+
+/* ================= inbox / gmail ================= */
+const G = { mcp: null, sample: null, by: { q1: [], q2: [] }, list: [], state: 'init', err: null, at: 0, tri: { busy: false, err: null }, week: { busy: false, text: '', err: '' } };
+const Q1 = { query: 'in:inbox newer_than:4d -category:promotions -category:social -category:forums', pageSize: 40 };
+const Q2 = { query: '(toddle OR assignment OR homework OR deadline OR exam OR teacher OR "due date") newer_than:21d -category:promotions -category:social', pageSize: 20 };
+const CAT = { school: 'School', deadline: 'Deadline', apps: 'Uni apps', money: 'Money', people: 'People', account: 'Account', other: 'Other' };
+const AUTHZ = ['needs_reauth', 'server_not_connected', 'selection_required', 'server_not_found', 'blocked_by_policy', 'not_in_manifest', 'not_granted', 'capability_disabled', 'capability_removed'];
+
+function parseThreads(p) {
+  if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { return []; } }
+  const arr = (p && p.threads) || [];
+  return arr.map(th => {
+    const ms = th.messages || []; const last = ms[ms.length - 1] || {}; const first = ms[0] || {};
+    return {
+      id: th.id, subject: last.subject || first.subject || '(no subject)', from: last.sender || first.sender || '',
+      snippet: last.snippet || first.snippet || '', labels: last.labelIds || first.labelIds || [], date: last.date || '',
+      url: th.viewUrl || last.viewUrl || `https://mail.google.com/mail/u/0/#all/${th.id}`, count: th.messageCount || ms.length
+    };
+  }).filter(x => x.id);
+}
+function mergeThreads() {
+  const seen = new Set(); G.list = [];
+  for (const x of [...G.by.q1, ...G.by.q2]) if (!seen.has(x.id)) { seen.add(x.id); G.list.push(x); }
+}
+function nameOf(from) { const m = /^\s*"?([^"<]+?)"?\s*<([^>]+)>/.exec(from); if (m) return m[1]; const e = /([^@\s]+)@([^>\s]+)/.exec(from); return e ? `${e[1]} · ${e[2]}` : from; }
+function heur(x) {
+  const s = (x.subject + ' ' + x.from + ' ' + x.snippet).toLowerCase();
+  const school = /toddle|assignment|homework|teacher|exam|class|school|ib\b|coursework/.test(s);
+  const dl = /deadline|due|register by|closes|last day|final reminder/.test(s);
+  const money = /payment.*(fail|unsuccess|declin)|invoice overdue/.test(s);
+  const imp = school || dl || money || (x.labels || []).includes('IMPORTANT');
+  return { imp, cat: school ? 'school' : dl ? 'deadline' : money ? 'money' : 'other', why: '', task: null, h: true };
+}
+function triOf(x) { return S.inbox.tri[x.id] || heur(x); }
+
+async function initGmail() {
+  if (!(window.claude && window.claude.use)) { G.state = 'none'; renderInbox(); return; }
+  try { [G.mcp, G.sample] = await Promise.all([window.claude.use('mcp'), window.claude.use('sample')]); } catch (e) { }
+  if (!G.mcp) { G.state = 'none'; renderInbox(); renderAiWeek(); return; }
+  G.state = 'loading'; renderInbox(); renderAiWeek();
+  watch('q1', Q1); watch('q2', Q2);
+}
+function watch(name, input) {
+  G.mcp.watchTool('Gmail', 'search_threads', input, ev => {
+    if (ev.type === 'data') {
+      G.by[name] = parseThreads(ev.result.payload);
+      G.at = (ev.result.cache && ev.result.cache.storedAt) || Date.now();
+      G.state = 'ok'; G.err = null; mergeThreads();
+    } else gErr(ev.error);
+    renderInbox(); flagTab(); maybeTriage();
+  }, { cache: { staleTime: 300000, gcTime: 3600000 }, refetchInterval: 600000 });
+}
+function gErr(e) {
+  const code = (e && e.code) || 'upstream_error';
+  if (code === 'approval_required') { G.state = 'approval'; G.err = e; return; }
+  if (AUTHZ.includes(code)) { G.by = { q1: [], q2: [] }; G.list = []; G.state = 'denied'; G.err = e; return; }
+  G.err = e; if (G.state !== 'ok') G.state = 'error';
+}
+async function gAllow() {
+  try { const r = await G.mcp.callTool('Gmail', 'search_threads', Q1); G.by.q1 = parseThreads(r.payload); G.at = Date.now(); G.state = 'ok'; G.err = null; mergeThreads(); }
+  catch (e) { gErr(e); }
+  renderInbox(); maybeTriage();
+}
+async function gRefresh() { if (!G.mcp) return; try { await G.mcp.invalidate('Gmail', 'search_threads'); } catch (e) { } toast('Refreshing Gmail…'); }
+
+function inboxVisible() { return curTab === 1; }
+async function maybeTriage(force) {
+  if (!G.sample || !S.inbox.ai || G.tri.busy || !Store.loaded) return;
+  if (!force && !inboxVisible()) return;
+  const todo = G.list.filter(x => !S.inbox.tri[x.id]).slice(0, 40);
+  if (!todo.length) return;
+  if (!force && G.tri.failed) return;
+  G.tri.busy = true; G.tri.err = null; renderInbox();
+  const prompt = `You triage email for a high-school IB Diploma student (Year 2) who is applying to US universities. Today is ${todayKey()}.
+For each email decide if it needs his attention.
+Important: school, teachers, Toddle, assignments, exams, grades; university admissions, applications, test registration deadlines; failed payments or account problems; personal messages from real people; anything with a near deadline.
+Not important: newsletters, marketing, promotions, routine receipts, social notifications, automated alerts, old login codes.
+Reply with only a JSON array, one object per email, same order:
+{"id": string, "imp": boolean, "cat": "school"|"deadline"|"apps"|"money"|"people"|"account"|"other", "why": string (max 8 words, plain), "task": null or {"t": string (short title), "due": "YYYY-MM-DD" or null}}
+Set "task" only for a school assignment, exam, or deadline he must act on.
+Emails:
+${JSON.stringify(todo.map(x => ({ id: x.id, from: x.from, subject: x.subject, snippet: (x.snippet || '').slice(0, 200) })))}`;
+  try {
+    const out = await G.sample.json(prompt, { modelTier: 'quick' });
+    const arr = Array.isArray(out) ? out : [];
+    const inbox = clone(S.inbox); const tasks = clone(S.tasks); let added = 0;
+    for (const r of arr) {
+      if (!r || typeof r.id !== 'string' || !todo.find(x => x.id === r.id)) continue;
+      const cat = CAT[r.cat] ? r.cat : 'other';
+      const task = r.task && typeof r.task.t === 'string' ? { t: r.task.t.slice(0, 120), due: /^\d{4}-\d{2}-\d{2}$/.test(r.task.due || '') ? r.task.due : null } : null;
+      inbox.tri[r.id] = { imp: !!r.imp, cat, why: String(r.why || '').slice(0, 80), task };
+      if (task && !tasks.items.find(i => i.src === r.id)) { tasks.items.push({ id: 't' + Date.now().toString(36) + added, t: task.t, due: task.due, src: r.id, done: false }); added++; }
+    }
+    for (const x of todo) if (!inbox.tri[x.id]) { const hh = heur(x); inbox.tri[x.id] = { imp: hh.imp, cat: hh.cat, why: '', task: null }; }
+    const ids = Object.keys(inbox.tri); if (ids.length > 300) ids.slice(0, ids.length - 300).forEach(id => delete inbox.tri[id]);
+    Store.put('inbox', inbox);
+    if (added) { Store.put('tasks', tasks); toast(`${added} assignment${added > 1 ? 's' : ''} added from email`); }
+  } catch (e) {
+    G.tri.failed = true;
+    G.tri.err = e && e.code === 'not_granted' ? 'AI triage was not allowed. Basic rules are used instead.' : e && e.code === 'rate_limited' ? 'Claude usage limit reached. Try again later.' : 'AI triage failed. Basic rules are used for now.';
+    if (e && (e.code === 'not_granted' || e.code === 'sampling_disabled')) G.sample = null;
+  }
+  G.tri.busy = false; renderInbox(); flagTab();
+}
+function flagTab() { const n = G.list.filter(x => triOf(x).imp).length; $('.tab[data-i="1"]').classList.toggle('has', n > 0); }
+
+function taskRow(it) {
+  let due = '', cls = '';
+  if (it.due) { const diff = Math.round((parseKey(it.due) - parseKey(todayKey())) / 864e5); due = diff < 0 ? `${-diff}d late` : diff === 0 ? 'today' : diff === 1 ? 'tomorrow' : fmtDay(it.due).toLowerCase(); cls = it.done ? '' : diff < 0 ? 'late' : diff <= 2 ? 'soon' : ''; }
+  return `<li class="${it.done ? 'done' : ''}"><button class="chk" data-task="${esc(it.id)}" aria-label="${it.done ? 'Mark not done' : 'Mark done'}" aria-pressed="${!!it.done}">${CHECK}</button><span class="tt">${esc(it.t)}</span><span class="due ${cls}">${esc(due)}</span></li>`;
+}
+function mailRow(x) {
+  const r = triOf(x);
+  return `<li><a href="${esc(x.url)}" target="_blank" rel="noopener"><div class="m-top"><span class="chip c-${esc(r.cat)}">${esc(CAT[r.cat] || 'Other')}</span><span class="m-from">${esc(nameOf(x.from))}</span></div><div class="m-sub">${esc(x.subject)}</div>${r.why ? `<div class="m-why">${esc(r.why)}</div>` : ''}</a></li>`;
+}
+function renderInbox() {
+  const sel = '#p-inbox';
+  let h = `<section class="ih"><div><div class="label">Gmail · last 4 days</div><div class="dim small" style="margin-top:4px">${G.state === 'ok' ? 'Updated ' + ago(G.at) : G.state === 'loading' || G.state === 'init' ? 'Connecting…' : ''}</div></div>${G.mcp && G.state !== 'denied' ? '<button class="btn" id="g-refresh">Refresh</button>' : ''}</section>`;
+  const code = G.err && G.err.code;
+  if (G.state === 'none') h += `<div class="card"><div class="label">Gmail unavailable here</div><p class="dim small" style="margin:8px 0 0">Open LIFEOS inside the Claude app or claude.ai to see your email.</p></div>`;
+  else if (G.state === 'denied') {
+    const msg = code === 'needs_reauth' ? 'Gmail needs reconnecting. Go to claude.ai → Settings → Connectors → Gmail.' : (code === 'server_not_connected' || code === 'selection_required' || code === 'server_not_found') ? 'Connect Gmail in claude.ai → Settings → Connectors, then reopen LIFEOS.' : code === 'blocked_by_policy' ? 'Your account settings block Gmail for apps.' : 'Gmail access is turned off for LIFEOS. Allow it from the app\'s permissions to see email here.';
+    h += `<div class="card"><div class="label">Gmail not connected</div><p class="dim small" style="margin:8px 0 0">${msg}</p></div>`;
+  } else if (G.state === 'approval') h += `<div class="card"><div class="label">Gmail needs your OK</div><p class="dim small" style="margin:8px 0 12px">LIFEOS reads your last few days of email (sender + subject) to flag what matters.</p><button class="btn solid" id="g-allow">Allow Gmail</button></div>`;
+  else if (G.state === 'error') h += `<div class="card"><div class="label">Gmail didn't respond</div><p class="dim small" style="margin:8px 0 12px">It may be a short outage.</p><button class="btn" id="g-refresh2">Try again</button></div>`;
+  else if (G.err) h += `<p class="note">Couldn't refresh just now. Showing the last result.</p>`;
+
+  if (G.sample && !S.inbox.ai && Store.loaded) h += `<div class="card"><div class="label">AI triage · off</div><p class="dim small" style="margin:8px 0 12px">Claude reads the sender and subject of recent emails, flags what needs you, and pulls assignments and deadlines into your list. Uses your Claude usage.</p><button class="btn solid" id="ai-on">Turn on AI triage</button></div>`;
+  if (G.tri.busy) h += `<p class="note">Claude is sorting your inbox…</p>`;
+  if (G.tri.err) h += `<p class="note">${esc(G.tri.err)}</p>`;
+
+  const imp = G.list.filter(x => triOf(x).imp); const rest = G.list.filter(x => !triOf(x).imp);
+  const order = { school: 0, deadline: 1, apps: 2, money: 3, people: 4, account: 5, other: 6 };
+  imp.sort((a, b) => (order[triOf(a).cat] ?? 9) - (order[triOf(b).cat] ?? 9));
+  if (G.state === 'ok' || G.list.length) {
+    h += `<section class="block"><div class="block-h"><span class="label">Needs you</span><span class="label num">${imp.length}</span></div>${imp.length ? `<ul class="mail">${imp.map(mailRow).join('')}</ul>` : '<p class="empty">Nothing important in the last 4 days.</p>'}</section>`;
+  }
+  // tasks
+  const items = (S.tasks.items || []).slice().sort((a, b) => (a.done - b.done) || String(a.due || '9999').localeCompare(String(b.due || '9999')));
+  const recent = items.filter(i => !i.done || !i.doneAt || (Date.now() - i.doneAt) < 3 * 864e5);
+  h += `<section class="block"><div class="block-h"><span class="label">Assignments & deadlines</span><span class="label num">${items.filter(i => !i.done).length} open</span></div>
+    ${recent.length ? `<ul class="tasks">${recent.map(taskRow).join('')}</ul>` : '<p class="empty">No open assignments.</p>'}
+    <form class="addtask" id="addtask"><input type="text" id="nt-t" placeholder="Add an assignment" aria-label="Assignment title" maxlength="120"><input type="date" id="nt-d" aria-label="Due date"><button class="btn" type="submit">Add</button></form></section>`;
+  if (rest.length) h += `<section class="block"><details class="more"><summary class="label">Everything else · ${rest.length}</summary><ul class="mail">${rest.map(mailRow).join('')}</ul></details></section>`;
+  h += `<p class="note">Toddle and school mail go to your school account, which can't connect here. Forward them to this Gmail to see assignments in LIFEOS.</p>`;
+  paint(sel, h);
+}
+
+async function renderAiWeek() {
+  const el = $('#ai-week'); if (!el) return;
+  if (!G.sample) { el.innerHTML = ''; return; }
+  el.innerHTML = G.week.busy ? '<p class="note">Claude is reading your week…</p>' : G.week.text ? `<div class="card"><div class="label">Claude's read on your week</div><div class="ai-out" style="margin-top:10px">${esc(G.week.text)}</div></div>` : `<button class="btn" id="ai-week-btn">Read my week with Claude</button>${G.week.err ? `<p class="note" style="margin-top:8px">${esc(G.week.err)}</p>` : ''}`;
+  const b = $('#ai-week-btn'); if (b) b.onclick = aiWeek;
+}
+async function aiWeek() {
+  const t = todayKey(); const rows = [];
+  for (let i = 6; i >= 0; i--) { const k = addDays(t, -i); const d = S.days[k] || {}; const dn = S.settings.routine.filter(r => d.done && d.done[r.id]).length;
+    rows.push({ date: k, wokeOnTime: !!(d.wake && d.wake.ok), routine: `${dn}/${S.settings.routine.length}`, score: d.rev ? d.rev.s : null, worked: d.rev ? d.rev.w : null, didnt: d.rev ? d.rev.d : null, fix: d.rev ? d.rev.f : null }); }
+  G.week.busy = true; G.week.err = ''; renderAiWeek();
+  try {
+    const { text } = await G.sample(`You are a blunt performance coach. Here is a student's last 7 days from his self-discipline app (wake check-in, routine, nightly review). Write exactly 3 short lines, no emoji, no intro:
+1. Pattern: what is repeating.
+2. Leak: the biggest thing costing him.
+3. Correction: one concrete change for next week.
+Max 60 words total.
+Data: ${JSON.stringify(rows)}`, { modelTier: 'default', cache: false });
+    G.week.text = text.trim();
+  } catch (e) { G.week.err = e && e.code === 'rate_limited' ? 'Claude usage limit reached. Try later.' : e && e.code === 'not_granted' ? 'Not allowed. AI features are hidden.' : "Couldn't get a read. Try again."; if (e && e.code === 'not_granted') G.sample = null; }
+  G.week.busy = false; renderAiWeek();
+}
+
+/* ================= interactions ================= */
+function holdify(el, ms, onDone) {
+  if (!el) return;
+  let raf = 0, t0 = 0, done = false;
+  const set = p => el.style.setProperty('--p', p);
+  const start = e => { if (done) return; if (e && e.cancelable) e.preventDefault(); S.holding = true; el.classList.add('holding'); t0 = performance.now();
+    const step = () => { const p = Math.min(1, (performance.now() - t0) / ms); set(p); if (p >= 1) { done = true; S.holding = false; el.classList.remove('holding'); el.classList.add('done'); try { navigator.vibrate && navigator.vibrate(18); } catch (x) { } if (onDone() === false) { done = false; el.classList.remove('done'); set(0); } return; } raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step); };
+  const stop = () => { if (done) return; cancelAnimationFrame(raf); S.holding = false; el.classList.remove('holding'); set(0); };
+  el.addEventListener('pointerdown', start);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(n => el.addEventListener(n, stop));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); start(); } });
+  el.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') stop(); });
+}
+
+function bind(sel) {
+  const root = $(sel);
+  if (sel === '#p-now') {
+    holdify($('#hold-wake', root), 1500, checkIn);
+    $$('.routine button', root).forEach(b => b.onclick = () => toggleRoutine(b.dataset.r));
+    $$('#review textarea', root).forEach(ta => ta.oninput = () => { const t = todayKey(); loadDraft(t); S.draft[t][ta.dataset.k] = ta.value; saveDraft(t); });
+    $$('.score button', root).forEach(b => b.onclick = () => { const t = todayKey(); loadDraft(t); S.draft[t].s = Number(b.dataset.s); saveDraft(t); $$('.score button', root).forEach(x => x.setAttribute('aria-checked', String(x === b))); });
+    holdify($('#hold-rev', root), 1500, submitReview);
+    $$('[data-go]', root).forEach(b => b.onclick = () => go(Number(b.dataset.go)));
+  }
+  if (sel === '#p-inbox') {
+    const r = $('#g-refresh', root); if (r) r.onclick = gRefresh;
+    const r2 = $('#g-refresh2', root); if (r2) r2.onclick = gRefresh;
+    const a = $('#g-allow', root); if (a) a.onclick = gAllow;
+    const ai = $('#ai-on', root); if (ai) ai.onclick = () => { const ib = clone(S.inbox); ib.ai = true; Store.put('inbox', ib); G.tri.failed = false; setTimeout(() => maybeTriage(true), 0); };
+    $$('[data-task]', root).forEach(b => b.onclick = () => { const tk = clone(S.tasks); const it = tk.items.find(i => i.id === b.dataset.task); if (!it) return; it.done = !it.done; it.doneAt = it.done ? Date.now() : null; Store.put('tasks', tk); });
+    const f = $('#addtask', root); if (f) f.onsubmit = e => { e.preventDefault(); const t = $('#nt-t').value.trim(); if (!t) return; const tk = clone(S.tasks); tk.items.push({ id: 't' + Date.now().toString(36), t: t.slice(0, 120), due: $('#nt-d').value || null, src: 'manual', done: false }); $('#nt-t').value = ''; $('#nt-t').blur(); Store.put('tasks', tk); };
+  }
+  if (sel === '#p-rules') { const e = $('#edit-rules', root); if (e) e.onclick = openRulesEditor; }
+}
+
+function checkIn() {
+  const t = todayKey(); if (phase() !== 'wake' || t < S.settings.start) { toast('The wake window is closed.'); renderNow(); return; }
+  const d = getDay(t); if (d.wake) return;
+  const now = new Date();
+  d.wake = { at: now.toISOString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, target: effWake(t), ok: true };
+  putDay(t, d); toast('Checked in. Day started.');
+}
+function toggleRoutine(id) {
+  const t = todayKey(); const d = getDay(t); d.done = d.done || {};
+  if (d.done[id]) delete d.done[id]; else d.done[id] = true;
+  putDay(t, d, 700);
+}
+function submitReview() {
+  const t = todayKey(); const dr = S.draft[t] || loadDraft(t); const err = $('#rv-err');
+  const miss = [];
+  if ((dr.w || '').trim().length < 2) miss.push('what worked'); if ((dr.d || '').trim().length < 2) miss.push("what didn't"); if ((dr.f || '').trim().length < 2) miss.push('a fix'); if (!dr.s) miss.push('a score');
+  if (miss.length) { if (err) err.textContent = 'Add ' + miss.join(', ') + ' first.'; return false; }
+  if (phase() !== 'night') { if (err) err.textContent = 'The review window is closed.'; return false; }
+  const d = getDay(t); if (d.rev) return;
+  d.rev = { w: dr.w.trim(), d: dr.d.trim(), f: dr.f.trim(), s: dr.s, at: new Date().toISOString() };
+  if (document.activeElement) document.activeElement.blur();
+  putDay(t, d); try { localStorage.removeItem('lifeos.draft.' + t); } catch (e) { }
+  toast(dayStatus(t) === 'win' ? 'Day won. Locked.' : 'Day locked.');
+}
+
+/* ================= navigation ================= */
+let curTab = 0; const NAMES = ['now', 'inbox', 'rules', 'stats'];
+const pager = $('#pager');
+function go(i, instant) { pager.scrollTo({ left: i * pager.clientWidth, behavior: instant ? 'instant' : 'smooth' }); setTab(i); }
+function setTab(i) {
+  if (i === curTab && $$('.tab')[i].getAttribute('aria-selected') === 'true') return;
+  curTab = i; $$('.tab').forEach((t, j) => t.setAttribute('aria-selected', String(j === i)));
+  try { history.replaceState(null, '', '#' + NAMES[i]); } catch (e) { }
+  if (i === 1) maybeTriage();
+}
+$$('.tab').forEach(t => t.onclick = () => go(Number(t.dataset.i)));
+let st; pager.addEventListener('scroll', () => { clearTimeout(st); st = setTimeout(() => setTab(Math.round(pager.scrollLeft / pager.clientWidth)), 80); }, { passive: true });
+window.addEventListener('resize', () => pager.scrollTo({ left: curTab * pager.clientWidth, behavior: 'instant' }));
+window.addEventListener('hashchange', () => { const i = NAMES.indexOf(location.hash.slice(1)); if (i >= 0 && i !== curTab) go(i); });
+
+/* ================= sheets ================= */
+let sheetMode = null;
+function openSheet(mode, html) { sheetMode = mode; $('#sheet-in').innerHTML = html; $('#sheet').hidden = false; }
+function closeSheet() { sheetMode = null; $('#sheet').hidden = true; $('#sheet-in').innerHTML = ''; }
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet' && sheetMode !== 'onboarding') closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetMode && sheetMode !== 'onboarding') closeSheet(); });
+
+function routineRows(list) { return list.map((r, i) => `<div class="rrow" data-i="${i}"><input type="time" value="${esc(r.t)}" aria-label="Time"><input type="text" value="${esc(r.l)}" aria-label="Block" maxlength="60"><button class="x" type="button" data-del="${i}" aria-label="Remove">×</button></div>`).join(''); }
+function readRoutine() { return $$('#rlist .rrow').map((row, i) => { const [ti, li] = row.querySelectorAll('input'); return { t: ti.value || '00:00', l: li.value.trim() }; }).filter(r => r.l).sort((a, b) => toMin(a.t) - toMin(b.t)); }
+function bindRoutineEditor(list) {
+  const draw = () => { $('#rlist').innerHTML = routineRows(list); $$('[data-del]').forEach(b => b.onclick = () => { syncList(); list.splice(Number(b.dataset.del), 1); draw(); }); };
+  const syncList = () => { const cur = $$('#rlist .rrow').map(row => { const [ti, li] = row.querySelectorAll('input'); return { t: ti.value, l: li.value }; }); list.length = 0; cur.forEach(x => list.push(x)); };
+  draw();
+  $('#radd').onclick = () => { syncList(); list.push({ t: '12:00', l: '' }); draw(); const ins = $$('#rlist input[type=text]'); ins[ins.length - 1].focus(); };
+}
+
+function openOnboarding() {
+  if (sheetMode === 'onboarding') return;
+  const list = DEFAULT_ROUTINE.map(r => ({ t: r.t, l: r.l }));
+  openSheet('onboarding', `<div style="display:flex;align-items:center;gap:14px"><span class="ob-mark">${MARK()}</span><div><h2 style="font-size:22px">Set your anchor</h2><p class="dim small" style="margin:2px 0 0">Strict mode. Settings you change later start the next day.</p></div></div>
+    <div class="field-row"><div class="field"><label class="label" for="o-wake">Wake time</label><input type="time" id="o-wake" value="06:00"></div>
+    <div class="field"><label class="label" for="o-win">Check-in window</label><select id="o-win"><option value="5">± 5 min</option><option value="10" selected>± 10 min</option><option value="15">± 15 min</option></select></div></div>
+    <div class="field"><label class="label" for="o-rev">Night review opens</label><input type="time" id="o-rev" value="21:00"><span class="dim small">Closes at 23:59. Miss it and the day is lost.</span></div>
+    <div class="field"><span class="label">Daily routine</span><div id="rlist" style="display:grid;gap:8px"></div><button class="btn" id="radd" type="button">Add block</button></div>
+    <p class="note">A day is won when you check in on time and lock the night review. 7 straight → Gold, 30 → Platinum, 90 → Black. Lose a day: streak to 0, down one tier.</p>
+    <button class="btn solid" id="o-start" style="height:52px">Start LIFEOS</button>
+    <button class="btn" id="o-restore" type="button">Restore from a backup</button><div id="imp-confirm"></div>`);
+  bindRoutineEditor(list);
+  $('#o-restore').onclick = pickBackup;
+  $('#o-start').onclick = () => {
+    const wake = $('#o-wake').value || '06:00', win = Number($('#o-win').value), rev = $('#o-rev').value || '21:00';
+    const routine = readRoutine().map((r, i) => ({ id: 'r' + Date.now().toString(36) + i, t: r.t, l: r.l }));
+    const t = todayKey(); const start = nowMin() < toMin(wake) + win ? t : addDays(t, 1);
+    sheetMode = null; closeSheet();
+    Store.put('settings', { v: 1, wake, win, rev, start, next: null, routine, rules: DEFAULT_RULES, created: new Date().toISOString() });
+    toast(start === t ? 'Day 1 is today.' : 'Day 1 starts tomorrow. Tonight is practice.');
+  };
+}
+
+function openSettings() {
+  if (!S.settings) return;
+  const s = S.settings; const t = todayKey(); const list = s.routine.map(r => ({ t: r.t, l: r.l, id: r.id }));
+  const nx = s.next ? `<p class="note">Scheduled: wake ${esc(s.next.wake)} ±${esc(s.next.win || s.win)} from ${esc(fmtDay(s.next.from).toLowerCase())}.</p>` : '';
+  openSheet('settings', `<div class="sheet-h"><h2 style="font-size:20px">Settings</h2><button class="x" id="s-close" aria-label="Close">×</button></div>
+    <div class="field-row"><div class="field"><label class="label" for="s-wake">Wake time</label><input type="time" id="s-wake" value="${esc(s.next ? s.next.wake : s.wake)}"></div>
+    <div class="field"><label class="label" for="s-win">Window</label><select id="s-win">${[5, 10, 15].map(n => `<option value="${n}" ${Number(s.next && s.next.win ? s.next.win : s.win) === n ? 'selected' : ''}>± ${n} min</option>`).join('')}</select></div></div>
+    <p class="note">Wake changes start tomorrow, so today can't be moved.</p>${nx}
+    <div class="field"><label class="label" for="s-rev">Night review opens</label><input type="time" id="s-rev" value="${esc(s.rev)}"></div>
+    <div class="field"><span class="label">Daily routine</span><div id="rlist" style="display:grid;gap:8px"></div><button class="btn" id="radd" type="button">Add block</button></div>
+    <div class="field"><span class="label">Your data</span><span class="dim small">Saved on this iPhone only. Export a backup now and then; you can restore it after reinstalling.</span><div class="btn-row"><button class="btn" id="s-export" type="button">Export backup</button><button class="btn" id="s-import" type="button">Restore backup</button></div><div id="imp-confirm"></div><span class="dim small">Started ${esc(fmtDay(s.start).toLowerCase())} · ${Object.keys(S.days).length} days logged</span></div>
+    <div class="btn-row"><button class="btn solid" id="s-save" style="flex:1">Save</button><button class="btn" id="s-cancel">Cancel</button></div>`);
+  bindRoutineEditor(list);
+  $('#s-export').onclick = exportBackup; $('#s-import').onclick = pickBackup;
+  $('#s-close').onclick = $('#s-cancel').onclick = closeSheet;
+  $('#s-save').onclick = () => {
+    const n = clone(S.settings); const wake = $('#s-wake').value || n.wake, win = Number($('#s-win').value), rev = $('#s-rev').value || n.rev;
+    const started = t >= n.start;
+    if (wake !== n.wake || win !== Number(n.win)) {
+      if (started) n.next = { wake, win, from: addDays(t, 1) }; else { n.wake = wake; n.win = win; n.next = null; }
+    } else n.next = null;
+    n.rev = rev;
+    const old = n.routine;
+    n.routine = readRoutine().map((r, i) => { const same = old.find(o => o.t === r.t && o.l === r.l) || old.find(o => o.l === r.l); return { id: same ? same.id : 'r' + Date.now().toString(36) + i, t: r.t, l: r.l }; });
+    Store.put('settings', n); closeSheet(); toast(n.next ? `Saved. New wake time starts ${fmtDay(n.next.from).toLowerCase()}.` : 'Saved.');
+  };
+}
+$('#open-settings').onclick = openSettings;
+
+function openRulesEditor() {
+  const txt = S.settings.rules.map(r => r.h + '\n' + r.b.map(b => '- ' + b).join('\n')).join('\n\n');
+  openSheet('rules', `<div class="sheet-h"><h2 style="font-size:20px">Edit rules</h2><button class="x" id="re-close" aria-label="Close">×</button></div>
+    <p class="note">One rule per paragraph. First line is the rule, lines starting with "-" are its points.</p>
+    <textarea id="re-txt" rows="16" style="font:14px/1.5 var(--f-mono)">${esc(txt)}</textarea>
+    <div class="btn-row"><button class="btn solid" id="re-save" style="flex:1">Save rules</button><button class="btn" id="re-reset">Restore defaults</button></div>`);
+  $('#re-close').onclick = closeSheet;
+  $('#re-reset').onclick = () => { $('#re-txt').value = DEFAULT_RULES.map(r => r.h + '\n' + r.b.map(b => '- ' + b).join('\n')).join('\n\n'); };
+  $('#re-save').onclick = () => {
+    const rules = $('#re-txt').value.split(/\n\s*\n/).map(p => { const ls = p.split('\n').map(l => l.trim()).filter(Boolean); if (!ls.length) return null; const h = ls[0].replace(/^(#+|\d+[.)])\s*/, ''); return { h, b: ls.slice(1).map(l => l.replace(/^[-•*·]\s*/, '')) }; }).filter(Boolean);
+    if (!rules.length) { toast('Add at least one rule.'); return; }
+    const n = clone(S.settings); n.rules = rules; Store.put('settings', n); closeSheet(); toast('Rules saved.');
+  };
+}
+
+/* ================= clock ================= */
+let lastPhase = null, lastDay = null;
+function tickClock() {
+  const d = new Date(); $('#clock').textContent = `${DOW[d.getDay()]} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (!S.settings) return;
+  const t = todayKey(), ph = phase();
+  if (t !== lastDay || ph !== lastPhase) { const first = lastDay === null; lastDay = t; lastPhase = ph; if (!first) { S.calc = compute(); renderAll(); } return; }
+  const m = nowMin(), w = toMin(effWake(t)), W = effWin(t);
+  const cd = $('#cd'); if (cd) cd.textContent = dur(w - W - m);
+  const wl = $('#win-left'); if (wl) wl.textContent = dur(w + W - m);
+}
+setInterval(tickClock, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tickClock(); });
+
+/* ================= standalone overrides ================= */
+function renderInbox() {
+  paint('#p-inbox', `<section class="block"><div class="label">Inbox</div><h2 style="font-size:26px;margin-top:12px">Your Gmail lives in Claude</h2>
+    <p class="dim" style="margin:4px 0 0">Claude sorts your email there: what needs you, deadlines, and assignments pulled into a list.</p></section>
+    <a class="btn solid" style="height:54px;text-decoration:none" href="${INBOX_URL}" target="_blank" rel="noopener">Open inbox in Claude</a>
+    <p class="note">Toddle and school mail go to your school account, which can't connect. Forward it to your personal Gmail to see it in the inbox.</p>`);
+}
+async function exportBackup() {
+  const body = JSON.stringify({ app: 'lifeos', v: 1, exported: new Date().toISOString(), docs: Store.docs });
+  const name = `lifeos-backup-${todayKey()}.json`;
+  const file = new File([body], name, { type: 'application/json' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'LIFEOS backup' }); return; } }
+  catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function pickBackup() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/json,.json';
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    let data; try { data = JSON.parse(await f.text()); } catch (e) { toast("That file isn't a LIFEOS backup."); return; }
+    if (!data || data.app !== 'lifeos' || !data.docs || !data.docs.settings) { toast("That file isn't a LIFEOS backup."); return; }
+    const box = $('#imp-confirm'); if (!box) return;
+    const n = Object.keys(data.docs).filter(k => k.startsWith('d-')).length;
+    box.innerHTML = `<div class="card"><p style="margin:0 0 12px">Replace everything on this iPhone with the backup from ${esc(String(data.exported).slice(0, 10))} (${n} days)?</p><div class="btn-row"><button class="btn solid" id="imp-yes">Replace</button><button class="btn" id="imp-no">Cancel</button></div></div>`;
+    $('#imp-no').onclick = () => { box.innerHTML = ''; };
+    $('#imp-yes').onclick = () => { Store.docs = data.docs; writeLocal(Store.docs); closeSheet(); sheetMode = null; onData(); toast('Backup restored.'); };
+  };
+  inp.click();
+}
+
+/* ================= boot ================= */
+(function boot() {
+  const d = new Date();
+  $('#sp-word').innerHTML = [...'LIFE'].map((c, i) => `<span style="animation-delay:${1.0 + i * .06}s;font-weight:600">${c}</span>`).join('') + [...'OS'].map((c, i) => `<span style="animation-delay:${1.24 + i * .06}s;font-weight:300">${c}</span>`).join('');
+  $('#sp-date').textContent = `${DOW[d.getDay()]} ${pad(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()} · DAY ${pad(doy(d) + 1)}`;
+  const sp = $('#splash');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hide = () => { if (sp.classList.contains('out')) return; sp.classList.add('out'); document.body.classList.add('boot'); setTimeout(() => { sp.remove(); document.body.classList.remove('boot'); }, 1300); };
+  document.body.classList.remove('boot');
+  sp.addEventListener('click', hide);
+  setTimeout(hide, reduce ? 500 : 2200);
+  const i = NAMES.indexOf(location.hash.slice(1)); if (i > 0) requestAnimationFrame(() => go(i, true));
+  renderAll();
+  Store.init();
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { }));
+})();
+</script>
+</body>
+</html>
