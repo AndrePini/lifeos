@@ -255,6 +255,11 @@ li.done .chk{background:var(--text);border-color:var(--text)} li.done .chk svg{o
 @media (max-width:420px){.addtask{grid-template-columns:1fr 1fr}.addtask .btn{grid-column:1/-1}}
 details.more summary{cursor:pointer;padding:6px 0}
 .note{font-size:13px;color:var(--dim);margin:0}
+.today{display:grid;gap:8px;width:100%;text-align:left;border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:var(--r);padding:14px 16px;background:var(--surface)}
+.today-l{display:grid;gap:4px;font-size:15px}
+.today b{font-weight:600}
+.today .bad{color:var(--bad)}
+.mail li.mrow{display:grid;grid-template-columns:1fr 36px;align-items:center;gap:6px}
 .empty{font-size:14px;color:var(--dim);padding:12px 0}
 
 /* ---------- sheet ---------- */
@@ -539,6 +544,7 @@ function renderNow() {
 
   // yesterday's fix
   if (yfix && ph !== 'night') h += `<section class="fix"><div class="label">Yesterday's fix</div><p>${esc(yfix)}</p></section>`;
+  if (typeof todayBlock === 'function') h += todayBlock();
 
   // review (night first)
   const reviewHTML = renderReview(t, d, ph);
@@ -981,12 +987,112 @@ function tickClock() {
 setInterval(tickClock, 15000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) tickClock(); });
 
-/* ================= standalone overrides ================= */
+/* ================= standalone: encrypted inbox feed ================= */
+const FEED_URL = 'https://raw.githubusercontent.com/AndrePini/lifeos/inbox-data/inbox.enc.json';
+const F = { data: null, err: '', busy: false, fetchedAt: 0 };
+const normKey = v => { const c = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return (c.match(/.{1,4}/g) || []).join('-'); };
+const getKey = () => { try { return localStorage.getItem('lifeos.key') || ''; } catch (e) { return ''; } };
+const setKey = k => { try { k ? localStorage.setItem('lifeos.key', k) : localStorage.removeItem('lifeos.key'); } catch (e) { } };
+const dismissed = () => (Store.docs.inboxlocal && Store.docs.inboxlocal.dismissed) || {};
+async function decryptFeed(file, pass) {
+  const b = x => Uint8Array.from(atob(x), c => c.charCodeAt(0));
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b(file.salt), iterations: file.iter || 210000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b(file.iv) }, key, b(file.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function fetchFeedFile() {
+  const r = await fetch(FEED_URL + '?t=' + Date.now(), { cache: 'no-store' });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+function mergeFeedTasks() {
+  if (!F.data || !Store.loaded) return;
+  const tk = clone(S.tasks) || { items: [] }; tk.items = tk.items || []; let ch = false;
+  for (const t of F.data.tasks || []) {
+    const ex = tk.items.find(i => i.src === t.src);
+    if (!ex) { tk.items.push({ id: 'f' + Math.random().toString(36).slice(2, 9), t: t.t, due: t.due || null, src: t.src, done: false }); ch = true; }
+    else if (t.due && ex.due !== t.due) { ex.due = t.due; ch = true; }
+  }
+  if (ch) Store.put('tasks', tk);
+}
+async function loadFeed(force) {
+  const key = getKey(); if (!key) { renderInbox(); return; }
+  if (!F.data) { try { const c = JSON.parse(localStorage.getItem('lifeos.feed') || 'null'); if (c) { F.data = await decryptFeed(c, key); mergeFeedTasks(); } } catch (e) { } }
+  if (!force && Date.now() - F.fetchedAt < 5 * 60e3) { renderInbox(); renderNow(); flagFeedTab(); return; }
+  if (F.busy) return;
+  F.busy = true; renderInbox();
+  try {
+    const file = await fetchFeedFile();
+    if (!file) F.err = 'none';
+    else {
+      try { F.data = await decryptFeed(file, key); F.err = ''; try { localStorage.setItem('lifeos.feed', JSON.stringify(file)); } catch (e) { } mergeFeedTasks(); }
+      catch (e) { F.err = 'badkey'; }
+    }
+    F.fetchedAt = Date.now();
+  } catch (e) { F.err = F.data ? 'offline' : 'offline-empty'; }
+  F.busy = false; renderInbox(); renderNow(); flagFeedTab();
+}
+async function unlock(val) {
+  const key = normKey(val), err = $('#key-err');
+  if (key.replace(/-/g, '').length < 16) { if (err) err.textContent = 'Enter the full passcode.'; return; }
+  if (err) err.textContent = 'Checking…';
+  try {
+    const file = await fetchFeedFile();
+    if (!file) { setKey(key); F.err = 'none'; renderInbox(); return; }
+    const data = await decryptFeed(file, key);
+    setKey(key); F.data = data; F.err = ''; F.fetchedAt = Date.now();
+    try { localStorage.setItem('lifeos.feed', JSON.stringify(file)); } catch (e) { }
+    if (document.activeElement) document.activeElement.blur();
+    mergeFeedTasks(); renderInbox(); renderNow(); flagFeedTab(); toast('Inbox unlocked.');
+  } catch (e) { if (err) err.textContent = e && e.name === 'OperationError' ? "That passcode doesn't open the inbox." : "Can't reach the inbox. Check your connection."; }
+}
+function flagFeedTab() { const n = F.data ? (F.data.items || []).filter(i => !dismissed()[i.id]).length : 0; const t = $('.tab[data-i="1"]'); if (t) t.classList.toggle('has', n > 0); }
+function maybeTriage() { loadFeed(); }
+const ORDER = { school: 0, deadline: 1, apps: 2, money: 3, people: 4, account: 5, other: 6 };
+function feedRow(x) {
+  return `<li class="mrow"><a href="${esc(x.url)}" target="_blank" rel="noopener"><div class="m-top"><span class="chip c-${esc(x.cat)}">${esc(CAT[x.cat] || 'Other')}</span><span class="m-from">${esc(nameOf(x.from))}</span></div><div class="m-sub">${esc(x.subject)}</div>${x.why ? `<div class="m-why">${esc(x.why)}</div>` : ''}</a><button class="x" data-dis="${esc(x.id)}" aria-label="Dismiss">×</button></li>`;
+}
 function renderInbox() {
-  paint('#p-inbox', `<section class="block"><div class="label">Inbox</div><h2 style="font-size:26px;margin-top:12px">Your Gmail lives in Claude</h2>
-    <p class="dim" style="margin:4px 0 0">Claude sorts your email there: what needs you, deadlines, and assignments pulled into a list.</p></section>
-    <a class="btn solid" style="height:54px;text-decoration:none" href="${INBOX_URL}" target="_blank" rel="noopener">Open inbox in Claude</a>
-    <p class="note">Toddle and school mail go to your school account, which can't connect. Forward it to your personal Gmail to see it in the inbox.</p>`);
+  const key = getKey(); let h = '';
+  if (!key) {
+    h += `<section class="block"><div class="label">Inbox</div><h2 style="font-size:26px;margin-top:12px">Unlock your inbox</h2>
+      <p class="dim" style="margin:4px 0 0">Claude checks your Gmail every 2 hours (06–22), sorts it, and sends it here locked. Enter the passcode Claude gave you. You only do this once.</p></section>
+      <form class="block" id="key-form" autocomplete="off"><label class="label" for="key-in">Passcode</label><input type="text" id="key-in" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"><button class="btn solid" type="submit" style="height:50px">Unlock</button><div class="err" id="key-err" role="alert"></div></form>`;
+  } else {
+    const d = F.data, dis = dismissed();
+    const sub = d ? `Updated ${ago(Date.parse(d.updated))} · Claude checks every 2 h, 06–22` : F.busy ? 'Loading…' : '';
+    h += `<section class="ih"><div><div class="label">Gmail · sorted by Claude</div><div class="dim small" style="margin-top:4px">${esc(sub)}</div></div><button class="btn" id="f-refresh" ${F.busy ? 'disabled' : ''}>${F.busy ? 'Loading' : 'Refresh'}</button></section>`;
+    if (F.err === 'badkey') h += `<div class="card"><div class="label">Passcode doesn't match</div><p class="dim small" style="margin:8px 0 12px">The inbox was locked with a different passcode.</p><button class="btn" id="f-rekey">Enter passcode again</button></div>`;
+    else if (F.err === 'none') h += `<p class="note">No inbox yet. The first sync arrives within 2 hours.</p>`;
+    else if (F.err === 'offline') h += `<p class="note">Offline. Showing the last update.</p>`;
+    else if (F.err === 'offline-empty') h += `<div class="card"><div class="label">Can't reach the inbox</div><p class="dim small" style="margin:8px 0 0">Check your connection, then tap Refresh.</p></div>`;
+    if (d) {
+      const items = (d.items || []).filter(i => !dis[i.id]).sort((a, b) => (ORDER[a.cat] ?? 9) - (ORDER[b.cat] ?? 9) || String(b.seen).localeCompare(String(a.seen)));
+      h += `<section class="block"><div class="block-h"><span class="label">Needs you</span><span class="label num">${items.length}</span></div>${items.length ? `<ul class="mail">${items.map(feedRow).join('')}</ul>` : '<p class="empty">Nothing important right now.</p>'}</section>`;
+    }
+  }
+  const items = (S.tasks.items || []).slice().sort((a, b) => (a.done - b.done) || String(a.due || '9999').localeCompare(String(b.due || '9999')));
+  const recent = items.filter(i => !i.done || !i.doneAt || (Date.now() - i.doneAt) < 3 * 864e5);
+  h += `<section class="block"><div class="block-h"><span class="label">Assignments & deadlines</span><span class="label num">${items.filter(i => !i.done).length} open</span></div>
+    ${recent.length ? `<ul class="tasks">${recent.map(taskRow).join('')}</ul>` : '<p class="empty">No open assignments.</p>'}
+    <form class="addtask" id="addtask"><input type="text" id="nt-t" placeholder="Add an assignment" aria-label="Assignment title" maxlength="120"><input type="date" id="nt-d" aria-label="Due date"><button class="btn" type="submit">Add</button></form></section>`;
+  h += `<p class="note">Assignments found in email are added automatically. Toddle and school mail go to your school account, which can't connect; forward it to your personal Gmail so Claude sees it.</p>`;
+  paint('#p-inbox', h);
+  const kf = $('#key-form'); if (kf) kf.onsubmit = e => { e.preventDefault(); unlock($('#key-in').value); };
+  const fr = $('#f-refresh'); if (fr) fr.onclick = () => loadFeed(true);
+  const rk = $('#f-rekey'); if (rk) rk.onclick = () => { setKey(''); F.err = ''; F.data = null; renderInbox(); renderNow(); };
+  $$('[data-dis]').forEach(b => b.onclick = () => { const cur = clone(Store.docs.inboxlocal) || {}; cur.dismissed = { ...(cur.dismissed || {}), [b.dataset.dis]: Date.now() }; const ids = Object.keys(cur.dismissed); if (ids.length > 400) ids.slice(0, ids.length - 400).forEach(k => delete cur.dismissed[k]); Store.put('inboxlocal', cur); flagFeedTab(); });
+}
+function todayBlock() {
+  const dis = dismissed(); const n = F.data ? (F.data.items || []).filter(i => !dis[i.id]).length : 0;
+  const t = todayKey(), tm = addDays(t, 1);
+  const open = (S.tasks.items || []).filter(i => !i.done && i.due);
+  const late = open.filter(i => i.due < t), dT = open.filter(i => i.due === t), dTm = open.filter(i => i.due === tm);
+  if (!n && !late.length && !dT.length && !dTm.length) return '';
+  const names = a => esc(a.map(x => x.t).join(' · '));
+  return `<button class="today" data-go="1"><span class="label">Today</span><span class="today-l">${n ? `<span><b>${n}</b> email${n > 1 ? 's' : ''} need${n > 1 ? '' : 's'} you</span>` : ''}${late.length ? `<span class="bad">Overdue: ${names(late)}</span>` : ''}${dT.length ? `<span>Due today: ${names(dT)}</span>` : ''}${dTm.length ? `<span class="dim">Due tomorrow: ${names(dTm)}</span>` : ''}</span></button>`;
 }
 async function exportBackup() {
   const body = JSON.stringify({ app: 'lifeos', v: 1, exported: new Date().toISOString(), docs: Store.docs });
@@ -1011,6 +1117,7 @@ function pickBackup() {
   };
   inp.click();
 }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadFeed(); });
 
 /* ================= boot ================= */
 (function boot() {
@@ -1026,6 +1133,7 @@ function pickBackup() {
   const i = NAMES.indexOf(location.hash.slice(1)); if (i > 0) requestAnimationFrame(() => go(i, true));
   renderAll();
   Store.init();
+  setTimeout(() => loadFeed(), 0);
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { }));
 })();
 </script>
