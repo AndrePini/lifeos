@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // LIFEOS inbox feed publisher.
-// Usage: LIFEOS_KEY=<passcode> node tools/publish-inbox.mjs /tmp/triage.json
-// triage.json: {"items":[{id,from,subject,cat,why,url?}], "tasks":[{t,due,src}]}
+// Usage: LIFEOS_KEY=<passcode> node tools/publish-inbox.mjs /tmp/triage.json [--replace]
+// triage.json: {"items":[{id,from,subject,cat,cls,toddle,imp,why,date?,url?}], "tasks":[{t,due,src,cls}]}
+// --replace drops previous items (use for a full re-sort); default merges into a 31-day window.
 // Merges with the previous feed, encrypts (PBKDF2-SHA256 -> AES-256-GCM, WebCrypto-compatible),
 // force-pushes a single commit to branch `inbox-data`, prints a JSON summary.
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
@@ -14,7 +15,10 @@ const KEY = process.env.LIFEOS_KEY;
 if (!KEY) { console.error('LIFEOS_KEY is not set'); process.exit(1); }
 const REPO = process.env.LIFEOS_REPO || 'https://github.com/AndrePini/lifeos';
 const BRANCH = 'inbox-data', FILE = 'inbox.enc.json', ITER = 210000, TZ = 'America/Sao_Paulo';
-const CATS = ['school', 'deadline', 'apps', 'money', 'people', 'account', 'other'];
+const CATS = ['school', 'deadline', 'apps', 'money', 'people', 'account', 'updates', 'promo', 'other'];
+const CLS = ['cs', 'econ', 'math', 'english', 'portuguese', 'core'];
+const REPLACE = process.argv.includes('--replace');
+const idDate = id => /^[0-9a-f]{16}$/.test(id) ? new Date(parseInt(id.slice(0, 11), 16)).toISOString() : null;
 
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
 const addDays = (k, n) => { const d = new Date(k + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -45,25 +49,26 @@ try {
 
 const now = new Date().toISOString();
 const prevIds = new Set((prev.items || []).map(i => i.id));
-const items = new Map((prev.items || []).map(i => [i.id, i]));
+const items = new Map(REPLACE ? [] : (prev.items || []).map(i => [i.id, i]));
 for (const i of input.items || []) {
   if (!i || !i.id) continue;
   const id = s(i.id, 64), old = items.get(id);
-  items.set(id, { id, from: s(i.from, 120), subject: s(i.subject, 200) || '(no subject)', cat: CATS.includes(i.cat) ? i.cat : 'other', why: s(i.why, 100), url: s(i.url, 300) || `https://mail.google.com/mail/u/0/#all/${id}`, seen: old ? old.seen : now });
+  const date = (i.date && !isNaN(Date.parse(i.date))) ? new Date(i.date).toISOString() : (old && old.date) || idDate(id) || now;
+  items.set(id, { id, from: s(i.from, 120), subject: s(i.subject, 200) || '(no subject)', cat: CATS.includes(i.cat) ? i.cat : 'other', cls: CLS.includes(i.cls) ? i.cls : null, toddle: !!i.toddle, imp: !!i.imp, why: s(i.why, 100), url: s(i.url, 300) || `https://mail.google.com/mail/u/0/#all/${id}`, date, seen: old ? old.seen : now });
 }
-const cutoff = Date.now() - 4 * 864e5;
-const keepItems = [...items.values()].filter(i => Date.parse(i.seen) >= cutoff).sort((a, b) => b.seen.localeCompare(a.seen)).slice(0, 60);
+const cutoff = Date.now() - 31 * 864e5;
+const keepItems = [...items.values()].map(i => ({ ...i, date: i.date || idDate(i.id) || i.seen })).filter(i => Date.parse(i.date) >= cutoff).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 400);
 
 const tasks = new Map((prev.tasks || []).map(t => [t.src, t]));
 for (const t of input.tasks || []) {
   if (!t || !t.t) continue;
   const src = s(t.src, 64) || s(t.t, 64), old = tasks.get(src);
   const due = /^\d{4}-\d{2}-\d{2}$/.test(t.due || '') ? t.due : (old ? old.due : null);
-  tasks.set(src, { t: s(t.t, 120), due, src, seen: old ? old.seen : now });
+  tasks.set(src, { t: s(t.t, 120), due, src, cls: CLS.includes(t.cls) ? t.cls : (old ? old.cls || null : null), seen: old ? old.seen : now });
 }
 const keepTasks = [...tasks.values()].filter(t => t.due ? t.due >= addDays(today, -3) : Date.parse(t.seen) >= Date.now() - 14 * 864e5).slice(0, 80);
 
-const feed = { updated: now, items: keepItems, tasks: keepTasks };
+const feed = { v: 2, updated: now, items: keepItems, tasks: keepTasks };
 const out = `${work}/out`;
 execSync(`git init -q -b ${BRANCH} ${out}`);
 writeFileSync(`${out}/${FILE}`, JSON.stringify(encrypt(feed)));
@@ -73,8 +78,9 @@ execSync(`git -C ${out} push -q --force ${REPO} ${BRANCH}:${BRANCH}`, { stdio: '
 
 const due = d => keepTasks.filter(t => t.due === d).map(t => t.t);
 console.log(JSON.stringify({
-  ok: true, updated: now, previousFeedRead: hadPrev, important: keepItems.length,
-  newImportant: keepItems.filter(i => !prevIds.has(i.id)).map(i => `${i.subject} — ${i.from}`),
+  ok: true, updated: now, previousFeedRead: hadPrev,
+  total: keepItems.length, needsYou: keepItems.filter(i => i.imp).length,
+  newImportant: keepItems.filter(i => i.imp && !prevIds.has(i.id)).map(i => `${i.subject} — ${i.from}`),
   dueToday: due(today), dueTomorrow: due(addDays(today, 1)),
   overdue: keepTasks.filter(t => t.due && t.due < today).map(t => t.t)
 }, null, 1));

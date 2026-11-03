@@ -259,7 +259,16 @@ details.more summary{cursor:pointer;padding:6px 0}
 .today-l{display:grid;gap:4px;font-size:15px}
 .today b{font-weight:600}
 .today .bad{color:var(--bad)}
-.mail li.mrow{display:grid;grid-template-columns:1fr 36px;align-items:center;gap:6px}
+.mail li.mrow{display:grid;grid-template-columns:minmax(0,1fr) 36px;align-items:center;gap:6px}
+.m-from{min-width:0;flex:1 1 auto}
+.mail li.imp a{border-left:2px solid var(--accent);padding-left:10px}
+.mail li.dim .m-sub{color:var(--dim)}
+.m-when{margin-left:auto;flex:none;font:500 11px var(--f-mono);color:var(--dim);padding-left:8px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:2px 18px;overscroll-behavior-x:contain}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);font:500 13px var(--f-body);color:var(--dim);white-space:nowrap}
+.chips button[aria-pressed=true]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.chips .n{font:500 11px var(--f-mono);margin-left:6px;opacity:.65}
 .empty{font-size:14px;color:var(--dim);padding:12px 0}
 
 /* ---------- sheet ---------- */
@@ -647,7 +656,8 @@ function renderStats() {
 const G = { mcp: null, sample: null, by: { q1: [], q2: [] }, list: [], state: 'init', err: null, at: 0, tri: { busy: false, err: null }, week: { busy: false, text: '', err: '' } };
 const Q1 = { query: 'in:inbox newer_than:4d -category:promotions -category:social -category:forums', pageSize: 40 };
 const Q2 = { query: '(toddle OR assignment OR homework OR deadline OR exam OR teacher OR "due date") newer_than:21d -category:promotions -category:social', pageSize: 20 };
-const CAT = { school: 'School', deadline: 'Deadline', apps: 'Uni apps', money: 'Money', people: 'People', account: 'Account', other: 'Other' };
+const CAT = { school: 'School', deadline: 'Deadline', apps: 'Uni apps', money: 'Money', people: 'People', account: 'Account', updates: 'Updates', promo: 'Promo', other: 'Other' };
+const CLS = { cs: 'CS', econ: 'Econ', math: 'Math', english: 'English', portuguese: 'Portuguese', core: 'TOK/EE/CAS' };
 const AUTHZ = ['needs_reauth', 'server_not_connected', 'selection_required', 'server_not_found', 'blocked_by_policy', 'not_in_manifest', 'not_granted', 'capability_disabled', 'capability_removed'];
 
 function parseThreads(p) {
@@ -751,7 +761,7 @@ function flagTab() { const n = G.list.filter(x => triOf(x).imp).length; $('.tab[
 function taskRow(it) {
   let due = '', cls = '';
   if (it.due) { const diff = Math.round((parseKey(it.due) - parseKey(todayKey())) / 864e5); due = diff < 0 ? `${-diff}d late` : diff === 0 ? 'today' : diff === 1 ? 'tomorrow' : fmtDay(it.due).toLowerCase(); cls = it.done ? '' : diff < 0 ? 'late' : diff <= 2 ? 'soon' : ''; }
-  return `<li class="${it.done ? 'done' : ''}"><button class="chk" data-task="${esc(it.id)}" aria-label="${it.done ? 'Mark not done' : 'Mark done'}" aria-pressed="${!!it.done}">${CHECK}</button><span class="tt">${esc(it.t)}</span><span class="due ${cls}">${esc(due)}</span></li>`;
+  return `<li class="${it.done ? 'done' : ''}"><button class="chk" data-task="${esc(it.id)}" aria-label="${it.done ? 'Mark not done' : 'Mark done'}" aria-pressed="${!!it.done}">${CHECK}</button><span class="tt">${it.cls && CLS[it.cls] ? `<span class="chip c-school" style="margin-right:8px">${esc(CLS[it.cls])}</span>` : ''}${esc(it.t)}</span><span class="due ${cls}">${esc(due)}</span></li>`;
 }
 function mailRow(x) {
   const r = triOf(x);
@@ -1012,8 +1022,8 @@ function mergeFeedTasks() {
   const tk = clone(S.tasks) || { items: [] }; tk.items = tk.items || []; let ch = false;
   for (const t of F.data.tasks || []) {
     const ex = tk.items.find(i => i.src === t.src);
-    if (!ex) { tk.items.push({ id: 'f' + Math.random().toString(36).slice(2, 9), t: t.t, due: t.due || null, src: t.src, done: false }); ch = true; }
-    else if (t.due && ex.due !== t.due) { ex.due = t.due; ch = true; }
+    if (!ex) { tk.items.push({ id: 'f' + Math.random().toString(36).slice(2, 9), t: t.t, due: t.due || null, src: t.src, cls: t.cls || null, done: false }); ch = true; }
+    else { if (t.due && ex.due !== t.due) { ex.due = t.due; ch = true; } if (t.cls && ex.cls !== t.cls) { ex.cls = t.cls; ch = true; } }
   }
   if (ch) Store.put('tasks', tk);
 }
@@ -1048,14 +1058,38 @@ async function unlock(val) {
     mergeFeedTasks(); renderInbox(); renderNow(); flagFeedTab(); toast('Inbox unlocked.');
   } catch (e) { if (err) err.textContent = e && e.name === 'OperationError' ? "That passcode doesn't open the inbox." : "Can't reach the inbox. Check your connection."; }
 }
-function flagFeedTab() { const n = F.data ? (F.data.items || []).filter(i => !dismissed()[i.id]).length : 0; const t = $('.tab[data-i="1"]'); if (t) t.classList.toggle('has', n > 0); }
+function flagFeedTab() { const n = F.data ? (F.data.items || []).filter(i => i.imp && !dismissed()[i.id]).length : 0; const t = $('.tab[data-i="1"]'); if (t) t.classList.toggle('has', n > 0); }
 function maybeTriage() { loadFeed(); }
-const ORDER = { school: 0, deadline: 1, apps: 2, money: 3, people: 4, account: 5, other: 6 };
-function feedRow(x) {
-  return `<li class="mrow"><a href="${esc(x.url)}" target="_blank" rel="noopener"><div class="m-top"><span class="chip c-${esc(x.cat)}">${esc(CAT[x.cat] || 'Other')}</span><span class="m-from">${esc(nameOf(x.from))}</span></div><div class="m-sub">${esc(x.subject)}</div>${x.why ? `<div class="m-why">${esc(x.why)}</div>` : ''}</a><button class="x" data-dis="${esc(x.id)}" aria-label="Dismiss">×</button></li>`;
+const ORDER = { school: 0, deadline: 1, apps: 2, money: 3, people: 4, account: 5, updates: 6, promo: 7, other: 8 };
+const FILTERS = [
+  ['imp', 'Needs you', (x, d) => x.imp && !d[x.id]],
+  ['all', 'All', x => x.cat !== 'promo'],
+  ['school', 'School', x => x.cat === 'school' || x.toddle || !!x.cls],
+  ['toddle', 'Toddle', x => !!x.toddle],
+  ['cs', 'CS', x => x.cls === 'cs'], ['econ', 'Econ', x => x.cls === 'econ'], ['math', 'Math', x => x.cls === 'math'],
+  ['english', 'English', x => x.cls === 'english'], ['portuguese', 'Portuguese', x => x.cls === 'portuguese'], ['core', 'TOK/EE/CAS', x => x.cls === 'core'],
+  ['apps', 'Uni apps', x => x.cat === 'apps'], ['money', 'Money', x => x.cat === 'money'], ['people', 'People', x => x.cat === 'people'],
+  ['account', 'Account', x => x.cat === 'account'], ['updates', 'Updates', x => x.cat === 'updates'], ['promo', 'Promos', x => x.cat === 'promo']
+];
+let curFilter = (() => { try { return localStorage.getItem('lifeos.filter') || 'imp'; } catch (e) { return 'imp'; } })();
+let showN = 40;
+function when(iso) {
+  const d = new Date(iso); if (isNaN(d)) return '';
+  const k = keyOf(d), t = todayKey();
+  if (k === t) return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (k === addDays(t, -1)) return 'Yesterday';
+  return `${pad(d.getDate())} ${MON[d.getMonth()].charAt(0)}${MON[d.getMonth()].slice(1).toLowerCase()}`;
+}
+function feedRow(x, dis) {
+  const done = !!dis[x.id], tags = [];
+  if (x.toddle) tags.push('<span class="chip c-school">Toddle</span>');
+  if (x.cls && CLS[x.cls]) tags.push(`<span class="chip c-school">${esc(CLS[x.cls])}</span>`);
+  if (!tags.length) tags.push(`<span class="chip c-${esc(x.cat)}">${esc(CAT[x.cat] || 'Other')}</span>`);
+  return `<li class="mrow ${x.imp && !done ? 'imp' : ''} ${done ? 'dim' : ''}"><a href="${esc(x.url)}" target="_blank" rel="noopener"><div class="m-top">${tags.join('')}<span class="m-from">${esc(nameOf(x.from))}</span><span class="m-when">${esc(when(x.date || x.seen))}</span></div><div class="m-sub">${esc(x.subject)}</div>${x.why ? `<div class="m-why">${esc(x.why)}</div>` : ''}</a>${x.imp ? `<button class="x" data-dis="${esc(x.id)}" aria-label="${done ? 'Mark as needing you' : 'Mark done'}" title="${done ? 'Undo' : 'Done'}">${done ? '↺' : '✓'}</button>` : '<span></span>'}</li>`;
 }
 function renderInbox() {
   const key = getKey(); let h = '';
+  const flt = FILTERS.find(f => f[0] === curFilter) || FILTERS[0];
   if (!key) {
     h += `<section class="block"><div class="label">Inbox</div><h2 style="font-size:26px;margin-top:12px">Unlock your inbox</h2>
       <p class="dim" style="margin:4px 0 0">Claude checks your Gmail every 2 hours (06–22), sorts it, and sends it here locked. Enter the passcode Claude gave you. You only do this once.</p></section>
@@ -1063,30 +1097,38 @@ function renderInbox() {
   } else {
     const d = F.data, dis = dismissed();
     const sub = d ? `Updated ${ago(Date.parse(d.updated))} · Claude checks every 2 h, 06–22` : F.busy ? 'Loading…' : '';
-    h += `<section class="ih"><div><div class="label">Gmail · sorted by Claude</div><div class="dim small" style="margin-top:4px">${esc(sub)}</div></div><button class="btn" id="f-refresh" ${F.busy ? 'disabled' : ''}>${F.busy ? 'Loading' : 'Refresh'}</button></section>`;
+    h += `<section class="ih"><div><div class="label">Gmail · last 31 days</div><div class="dim small" style="margin-top:4px">${esc(sub)}</div></div><button class="btn" id="f-refresh" ${F.busy ? 'disabled' : ''}>${F.busy ? 'Loading' : 'Refresh'}</button></section>`;
     if (F.err === 'badkey') h += `<div class="card"><div class="label">Passcode doesn't match</div><p class="dim small" style="margin:8px 0 12px">The inbox was locked with a different passcode.</p><button class="btn" id="f-rekey">Enter passcode again</button></div>`;
     else if (F.err === 'none') h += `<p class="note">No inbox yet. The first sync arrives within 2 hours.</p>`;
     else if (F.err === 'offline') h += `<p class="note">Offline. Showing the last update.</p>`;
     else if (F.err === 'offline-empty') h += `<div class="card"><div class="label">Can't reach the inbox</div><p class="dim small" style="margin:8px 0 0">Check your connection, then tap Refresh.</p></div>`;
     if (d) {
-      const items = (d.items || []).filter(i => !dis[i.id]).sort((a, b) => (ORDER[a.cat] ?? 9) - (ORDER[b.cat] ?? 9) || String(b.seen).localeCompare(String(a.seen)));
-      h += `<section class="block"><div class="block-h"><span class="label">Needs you</span><span class="label num">${items.length}</span></div>${items.length ? `<ul class="mail">${items.map(feedRow).join('')}</ul>` : '<p class="empty">Nothing important right now.</p>'}</section>`;
+      const all = d.items || [];
+      h += `<div class="chips" role="toolbar" aria-label="Filters">${FILTERS.map(f => { const n = all.filter(x => f[2](x, dis)).length; return `<button data-flt="${f[0]}" aria-pressed="${f[0] === flt[0]}">${esc(f[1])}<span class="n">${n}</span></button>`; }).join('')}</div>`;
+      let list = all.filter(x => flt[2](x, dis));
+      list.sort(flt[0] === 'imp' ? (a, b) => (ORDER[a.cat] ?? 9) - (ORDER[b.cat] ?? 9) || String(b.date).localeCompare(String(a.date)) : (a, b) => String(b.date || b.seen).localeCompare(String(a.date || a.seen)));
+      const shown = list.slice(0, showN);
+      h += `<section class="block">${shown.length ? `<ul class="mail">${shown.map(x => feedRow(x, dis)).join('')}</ul>` : `<p class="empty">${flt[0] === 'imp' ? 'Nothing needs you right now.' : 'No emails here in the last 31 days.'}</p>`}
+        ${list.length > showN ? `<button class="btn" id="f-more">Show ${Math.min(40, list.length - showN)} more of ${list.length - showN}</button>` : ''}</section>`;
     }
   }
-  const items = (S.tasks.items || []).slice().sort((a, b) => (a.done - b.done) || String(a.due || '9999').localeCompare(String(b.due || '9999')));
+  const clsF = CLS[curFilter] ? curFilter : null;
+  const items = (S.tasks.items || []).filter(i => !clsF || i.cls === clsF).slice().sort((a, b) => (a.done - b.done) || String(a.due || '9999').localeCompare(String(b.due || '9999')));
   const recent = items.filter(i => !i.done || !i.doneAt || (Date.now() - i.doneAt) < 3 * 864e5);
-  h += `<section class="block"><div class="block-h"><span class="label">Assignments & deadlines</span><span class="label num">${items.filter(i => !i.done).length} open</span></div>
+  h += `<section class="block"><div class="block-h"><span class="label">Assignments & deadlines${clsF ? ' · ' + esc(CLS[clsF]) : ''}</span><span class="label num">${items.filter(i => !i.done).length} open</span></div>
     ${recent.length ? `<ul class="tasks">${recent.map(taskRow).join('')}</ul>` : '<p class="empty">No open assignments.</p>'}
     <form class="addtask" id="addtask"><input type="text" id="nt-t" placeholder="Add an assignment" aria-label="Assignment title" maxlength="120"><input type="date" id="nt-d" aria-label="Due date"><button class="btn" type="submit">Add</button></form></section>`;
-  h += `<p class="note">Assignments found in email are added automatically. Toddle and school mail go to your school account, which can't connect; forward it to your personal Gmail so Claude sees it.</p>`;
+  h += `<p class="note">Assignments found in email are added automatically. School mail (Toddle, teachers) shows up once your Graded account forwards to this Gmail.</p>`;
   paint('#p-inbox', h);
   const kf = $('#key-form'); if (kf) kf.onsubmit = e => { e.preventDefault(); unlock($('#key-in').value); };
   const fr = $('#f-refresh'); if (fr) fr.onclick = () => loadFeed(true);
+  const fm = $('#f-more'); if (fm) fm.onclick = () => { showN += 40; renderInbox(); };
   const rk = $('#f-rekey'); if (rk) rk.onclick = () => { setKey(''); F.err = ''; F.data = null; renderInbox(); renderNow(); };
-  $$('[data-dis]').forEach(b => b.onclick = () => { const cur = clone(Store.docs.inboxlocal) || {}; cur.dismissed = { ...(cur.dismissed || {}), [b.dataset.dis]: Date.now() }; const ids = Object.keys(cur.dismissed); if (ids.length > 400) ids.slice(0, ids.length - 400).forEach(k => delete cur.dismissed[k]); Store.put('inboxlocal', cur); flagFeedTab(); });
+  $$('[data-flt]').forEach(b => b.onclick = () => { curFilter = b.dataset.flt; showN = 40; try { localStorage.setItem('lifeos.filter', curFilter); } catch (e) { } renderInbox(); });
+  $$('[data-dis]').forEach(b => b.onclick = () => { const cur = clone(Store.docs.inboxlocal) || {}; cur.dismissed = { ...(cur.dismissed || {}) }; const id = b.dataset.dis; if (cur.dismissed[id]) delete cur.dismissed[id]; else cur.dismissed[id] = Date.now(); const ids = Object.keys(cur.dismissed); if (ids.length > 400) ids.slice(0, ids.length - 400).forEach(k => delete cur.dismissed[k]); Store.put('inboxlocal', cur); flagFeedTab(); });
 }
 function todayBlock() {
-  const dis = dismissed(); const n = F.data ? (F.data.items || []).filter(i => !dis[i.id]).length : 0;
+  const dis = dismissed(); const n = F.data ? (F.data.items || []).filter(i => i.imp && !dis[i.id]).length : 0;
   const t = todayKey(), tm = addDays(t, 1);
   const open = (S.tasks.items || []).filter(i => !i.done && i.due);
   const late = open.filter(i => i.due < t), dT = open.filter(i => i.due === t), dTm = open.filter(i => i.due === tm);
